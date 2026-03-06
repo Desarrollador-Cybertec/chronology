@@ -6,6 +6,7 @@ import type { ImportBatch, PaginationMeta } from '@/types/api';
 import Pagination from '@/components/ui/Pagination';
 import StatusBadge from '@/components/ui/StatusBadge';
 import FileDropZone from '@/components/ui/FileDropZone';
+import ProcessingIndicator from '@/components/ui/ProcessingIndicator';
 import { useAuth } from '@/context/useAuth';
 import { ApiError } from '@/api/client';
 import {
@@ -23,6 +24,7 @@ export default function ImportPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [page, setPage] = useState(1);
   const [uploading, setUploading] = useState(false);
+  const [processingBatch, setProcessingBatch] = useState<ImportBatch | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchBatches = () => {
@@ -49,6 +51,7 @@ export default function ImportPage() {
         title: 'Archivo subido',
         description: `${res.data.total_rows} filas detectadas. Procesando...`,
       });
+      setProcessingBatch(res.data);
       fetchBatches();
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -90,6 +93,14 @@ export default function ImportPage() {
         </p>
         <FileDropZone onFileSelected={handleUpload} disabled={uploading} />
         {uploading && <p className="mt-3 text-center text-sm text-indigo-600 animate-pulse">Subiendo archivo...</p>}
+        {processingBatch && (
+          <div className="mt-4">
+            <ProcessingIndicator
+              batch={processingBatch}
+              onComplete={() => { setProcessingBatch(null); fetchBatches(); }}
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-8">

@@ -5,6 +5,7 @@ import { attendance, employees, imports } from '@/api/endpoints';
 import StatusBadge from '@/components/ui/StatusBadge';
 import TutorialModal from '@/components/ui/TutorialModal';
 import FileDropZone from '@/components/ui/FileDropZone';
+import ProcessingIndicator from '@/components/ui/ProcessingIndicator';
 import { managerSteps, adminSteps } from '@/data/tutorialSteps';
 import type { AttendanceRecord, ImportBatch } from '@/types/api';
 import { ApiError } from '@/api/client';
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const [recentImport, setRecentImport] = useState<ImportBatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [processingBatch, setProcessingBatch] = useState<ImportBatch | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -88,6 +90,7 @@ export default function DashboardPage() {
       const res = await imports.upload(file);
       sileo.success({ title: 'Archivo subido', description: `${res.data.total_rows} filas detectadas. Procesando...` });
       setRecentImport(res.data);
+      setProcessingBatch(res.data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
         const body = err.body as { errors?: string[] };
@@ -174,6 +177,14 @@ export default function DashboardPage() {
         </div>
         <FileDropZone onFileSelected={handleUpload} disabled={uploading} compact />
         {uploading && <p className="mt-2 text-xs text-indigo-600 animate-pulse">Subiendo archivo...</p>}
+        {processingBatch && (
+          <div className="mt-3">
+            <ProcessingIndicator
+              batch={processingBatch}
+              onComplete={() => setProcessingBatch(null)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Repeat Late Offenders */}
