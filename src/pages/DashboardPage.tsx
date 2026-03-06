@@ -11,18 +11,27 @@ import { ApiError } from '@/api/client';
 import { sileo } from 'sileo';
 import {
   HiOutlineUsers,
-  HiOutlineCheckCircle,
+  HiOutlineClock,
   HiOutlineExclamationTriangle,
   HiOutlineArrowUpTray,
-  HiOutlineClipboardDocumentCheck,
+  HiOutlineArrowPath,
   HiOutlineArrowTopRightOnSquare,
 } from 'react-icons/hi2';
 import { SkeletonCard, SkeletonTable, Skeleton } from '@/components/ui/Skeleton';
 
+interface LateOffender {
+  employeeId: number;
+  name: string;
+  count: number;
+  totalMinutes: number;
+  avgMinutes: number;
+  lastDate: string;
+}
+
 export default function DashboardPage() {
   const { user, isSuperadmin } = useAuth();
-  const today = new Date().toISOString().split('T')[0];
-  const [todayRecords, setTodayRecords] = useState<AttendanceRecord[]>([]);
+  const [lateOffenders, setLateOffenders] = useState<LateOffender[]>([]);
+  const [totalLateRecords, setTotalLateRecords] = useState(0);
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [recentImport, setRecentImport] = useState<ImportBatch | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,11 +39,42 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      attendance.byDay(today, { per_page: 5 }).catch(() => ({ data: [], meta: { total: 0, current_page: 1, last_page: 1, per_page: 5, from: null, to: null } })),
+      attendance.list({ has_late: 1, per_page: 100 }).catch(() => ({ data: [] as AttendanceRecord[], meta: { total: 0, current_page: 1, last_page: 1, per_page: 100, from: null, to: null } })),
       employees.list(1).catch(() => ({ data: [], meta: { total: 0, current_page: 1, last_page: 1, per_page: 20, from: null, to: null } })),
       imports.list(1).catch(() => ({ data: [], meta: { total: 0, current_page: 1, last_page: 1, per_page: 20, from: null, to: null } })),
     ]).then(([attRes, empRes, impRes]) => {
-      setTodayRecords(attRes.data);
+      setTotalLateRecords(attRes.meta.total);
+
+      const grouped = new Map<number, { name: string; count: number; totalMinutes: number; lastDate: string }>();
+      for (const rec of attRes.data) {
+        const existing = grouped.get(rec.employee_id);
+        if (existing) {
+          existing.count++;
+          existing.totalMinutes += rec.late_minutes;
+          if (rec.date_reference > existing.lastDate) existing.lastDate = rec.date_reference;
+        } else {
+          grouped.set(rec.employee_id, {
+            name: `${rec.employee.first_name} ${rec.employee.last_name}`,
+            count: 1,
+            totalMinutes: rec.late_minutes,
+            lastDate: rec.date_reference,
+          });
+        }
+      }
+
+      const offenders: LateOffender[] = Array.from(grouped.entries())
+        .filter(([, v]) => v.count >= 2)
+        .map(([id, v]) => ({
+          employeeId: id,
+          name: v.name,
+          count: v.count,
+          totalMinutes: v.totalMinutes,
+          avgMinutes: Math.round(v.totalMinutes / v.count),
+          lastDate: v.lastDate,
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      setLateOffenders(offenders);
       setTotalEmployees(empRes.meta.total);
       setRecentImport(impRes.data[0] ?? null);
     }).catch(() => sileo.error({ title: 'Error al cargar dashboard' }))
@@ -67,12 +107,9 @@ export default function DashboardPage() {
         {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
       </div>
       <Skeleton className="mt-6 h-20 w-full rounded-xl" />
-      <SkeletonTable cols={4} rows={5} />
+      <SkeletonTable cols={6} rows={5} />
     </div>
   );
-
-  const presentCount = todayRecords.filter((r) => r.status === 'present').length;
-  const lateCount = todayRecords.filter((r) => r.late_minutes > 0).length;
 
   return (
     <div>
@@ -96,21 +133,21 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-            <HiOutlineCheckCircle className="h-6 w-6" />
-          </div>
-          <div>
-            <span className="block text-2xl font-bold text-gray-900">{presentCount}</span>
-            <span className="text-sm text-gray-500">Presentes hoy</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-50 text-red-600">
             <HiOutlineExclamationTriangle className="h-6 w-6" />
           </div>
           <div>
-            <span className="block text-2xl font-bold text-red-600">{lateCount}</span>
-            <span className="text-sm text-gray-500">Tardanzas hoy</span>
+            <span className="block text-2xl font-bold text-red-600">{lateOffenders.length}</span>
+            <span className="text-sm text-gray-500">Reincidentes</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+            <HiOutlineClock className="h-6 w-6" />
+          </div>
+          <div>
+            <span className="block text-2xl font-bold text-gray-900">{totalLateRecords}</span>
+            <span className="text-sm text-gray-500">Total tardanzas</span>
           </div>
         </div>
         <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
@@ -139,40 +176,46 @@ export default function DashboardPage() {
         {uploading && <p className="mt-2 text-xs text-indigo-600 animate-pulse">Subiendo archivo...</p>}
       </div>
 
-      {/* Today's Attendance */}
+      {/* Repeat Late Offenders */}
       <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <HiOutlineClipboardDocumentCheck className="h-5 w-5 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900">Asistencia de hoy — {today}</h3>
+            <HiOutlineArrowPath className="h-5 w-5 text-red-400" />
+            <h3 className="text-lg font-semibold text-gray-900">Reincidentes de tardanza</h3>
           </div>
-          <Link to={`/attendance?date_from=${today}&date_to=${today}`} className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline">
+          <Link to="/attendance?has_late=1" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline">
             Ver todo <HiOutlineArrowTopRightOnSquare className="h-3.5 w-3.5" />
           </Link>
         </div>
 
-        {todayRecords.length === 0 ? (
-          <p className="text-sm text-gray-400">No hay registros para hoy.</p>
+        {lateOffenders.length === 0 ? (
+          <p className="text-sm text-gray-400">No hay empleados con tardanzas recurrentes.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-gray-200 text-xs uppercase text-gray-500">
                 <tr>
                   <th className="pb-2">Empleado</th>
-                  <th className="pb-2">Entrada</th>
-                  <th className="pb-2">Tardanza</th>
-                  <th className="pb-2">Estado</th>
+                  <th className="pb-2 text-center">Veces tarde</th>
+                  <th className="pb-2 text-right">Total min</th>
+                  <th className="pb-2 text-right">Promedio</th>
+                  <th className="pb-2">Última tardanza</th>
+                  <th className="pb-2"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {todayRecords.map((rec) => (
-                  <tr key={rec.id}>
-                    <td className="py-2">{rec.employee.first_name} {rec.employee.last_name}</td>
-                    <td className="py-2">{rec.first_check_in?.split(' ')[1] ?? '—'}</td>
-                    <td className={`py-2 ${rec.late_minutes > 0 ? 'text-red-600 font-medium' : ''}`}>
-                      {rec.late_minutes > 0 ? `${rec.late_minutes} min` : '—'}
+                {lateOffenders.map((o) => (
+                  <tr key={o.employeeId}>
+                    <td className="py-2 font-medium text-gray-900">{o.name}</td>
+                    <td className="py-2 text-center">
+                      <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">{o.count}</span>
                     </td>
-                    <td className="py-2"><StatusBadge status={rec.status} /></td>
+                    <td className="py-2 text-right text-red-600 font-medium">{o.totalMinutes} min</td>
+                    <td className="py-2 text-right text-gray-600">{o.avgMinutes} min</td>
+                    <td className="py-2 text-gray-500">{o.lastDate}</td>
+                    <td className="py-2">
+                      <Link to={`/employees/${o.employeeId}`} className="text-indigo-600 hover:underline text-xs">Ver perfil</Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
