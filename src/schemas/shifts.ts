@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+const timeRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
 export const shiftSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),

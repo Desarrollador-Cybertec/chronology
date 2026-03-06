@@ -37,12 +37,12 @@ export default function ShiftEditPage() {
       setShift(res.data);
       reset({
         name: res.data.name,
-        start_time: res.data.start_time,
-        end_time: res.data.end_time,
+        start_time: res.data.start_time.slice(0, 5),
+        end_time: res.data.end_time.slice(0, 5),
         crosses_midnight: res.data.crosses_midnight,
         lunch_required: res.data.lunch_required,
-        lunch_start_time: res.data.lunch_start_time ?? '',
-        lunch_end_time: res.data.lunch_end_time ?? '',
+        lunch_start_time: res.data.lunch_start_time?.slice(0, 5) ?? '',
+        lunch_end_time: res.data.lunch_end_time?.slice(0, 5) ?? '',
         lunch_duration_minutes: res.data.lunch_duration_minutes,
         tolerance_minutes: res.data.tolerance_minutes,
         overtime_enabled: res.data.overtime_enabled,
@@ -56,7 +56,13 @@ export default function ShiftEditPage() {
 
   const onSubmit = async (data: ShiftFormData) => {
     try {
-      await shifts.update(Number(id), data);
+      const payload = { ...data };
+      if (!payload.lunch_required) {
+        payload.lunch_start_time = undefined;
+        payload.lunch_end_time = undefined;
+        payload.lunch_duration_minutes = 0;
+      }
+      await shifts.update(Number(id), payload);
       sileo.success({ title: 'Turno actualizado' });
       navigate('/shifts');
     } catch {
@@ -85,17 +91,20 @@ export default function ShiftEditPage() {
 
           <div>
             <label htmlFor="start_time" className="mb-1 block text-sm font-medium text-gray-700">Hora de entrada</label>
-            <input id="start_time" type="time" {...register('start_time')} className={inputBase} />
+            <input id="start_time" type="time" {...register('start_time')} className={`${inputBase} ${errors.start_time ? 'border-red-400' : ''}`} />
+            {errors.start_time && <span className="mt-1 block text-xs text-red-500">{errors.start_time.message}</span>}
           </div>
 
           <div>
             <label htmlFor="end_time" className="mb-1 block text-sm font-medium text-gray-700">Hora de salida</label>
-            <input id="end_time" type="time" {...register('end_time')} className={inputBase} />
+            <input id="end_time" type="time" {...register('end_time')} className={`${inputBase} ${errors.end_time ? 'border-red-400' : ''}`} />
+            {errors.end_time && <span className="mt-1 block text-xs text-red-500">{errors.end_time.message}</span>}
           </div>
 
           <div>
             <label htmlFor="tolerance_minutes" className="mb-1 block text-sm font-medium text-gray-700">Tolerancia (min)</label>
             <input id="tolerance_minutes" type="number" {...register('tolerance_minutes')} className={inputBase} />
+            {errors.tolerance_minutes && <span className="mt-1 block text-xs text-red-500">{errors.tolerance_minutes.message}</span>}
           </div>
 
           <div className="sm:col-span-2">

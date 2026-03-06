@@ -15,7 +15,10 @@ export default function ProcessingIndicator({ batch: initial, onComplete }: Proc
   const finished = batch.status === 'completed' || batch.status === 'failed';
 
   useEffect(() => {
-    if (finished) return;
+    if (finished) {
+      const timeout = setTimeout(() => onComplete(batch), 2500);
+      return () => clearTimeout(timeout);
+    }
 
     intervalRef.current = setInterval(async () => {
       try {
@@ -100,14 +103,11 @@ export default function ProcessingIndicator({ batch: initial, onComplete }: Proc
 
           {/* Completed stats */}
           {batch.status === 'completed' && (
-            <div className="mt-2 space-y-1">
+            <div className="mt-2">
               <p className="text-sm text-emerald-700">
                 Procesamiento completado — {batch.processed_rows} filas procesadas
                 {batch.failed_rows > 0 && <span className="text-red-600"> · {batch.failed_rows} fallidas</span>}
               </p>
-              <button onClick={() => onComplete(batch)} className="text-xs font-medium text-emerald-700 hover:underline cursor-pointer">
-                Cerrar
-              </button>
             </div>
           )}
 
@@ -120,9 +120,6 @@ export default function ProcessingIndicator({ batch: initial, onComplete }: Proc
               {batch.errors && batch.errors.length > 0 && (
                 <p className="text-xs text-red-600">{batch.errors[0]}</p>
               )}
-              <button onClick={() => onComplete(batch)} className="text-xs font-medium text-red-700 hover:underline cursor-pointer">
-                Cerrar
-              </button>
             </div>
           )}
         </div>

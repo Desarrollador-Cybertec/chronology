@@ -34,8 +34,8 @@ export default function AttendanceEditPage() {
       .then((res) => {
         setRecord(res.data);
         reset({
-          first_check_in: res.data.first_check_in ?? '',
-          last_check_out: res.data.last_check_out ?? '',
+          first_check_in: res.data.first_check_in?.replace(' ', 'T').slice(0, 16) ?? '',
+          last_check_out: res.data.last_check_out?.replace(' ', 'T').slice(0, 16) ?? '',
           worked_minutes: res.data.worked_minutes,
           overtime_minutes: res.data.overtime_minutes,
           overtime_diurnal_minutes: res.data.overtime_diurnal_minutes,
