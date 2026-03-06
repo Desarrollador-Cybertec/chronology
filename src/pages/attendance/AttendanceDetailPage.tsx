@@ -5,6 +5,7 @@ import type { AttendanceRecord } from '@/types/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
+import { SkeletonDetail } from '@/components/ui/Skeleton';
 
 function formatMinutes(min: number): string {
   const h = Math.floor(min / 60);
@@ -26,7 +27,7 @@ export default function AttendanceDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (loading) return <SkeletonDetail rows={10} />;
   if (!record) return <p className="text-gray-500">Registro no encontrado.</p>;
 
   return (

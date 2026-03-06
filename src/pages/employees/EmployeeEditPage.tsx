@@ -6,6 +6,7 @@ import { sileo } from 'sileo';
 import { employees } from '@/api/endpoints';
 import { employeeUpdateSchema, type EmployeeUpdateFormData } from '@/schemas/employees';
 import type { Employee } from '@/types/api';
+import { SkeletonForm } from '@/components/ui/Skeleton';
 
 const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -48,7 +49,7 @@ export default function EmployeeEditPage() {
     }
   };
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (loading) return <SkeletonForm fields={4} />;
   if (!employee) return <p className="text-gray-500">Empleado no encontrado.</p>;
 
   return (

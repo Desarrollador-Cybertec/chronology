@@ -7,6 +7,7 @@ import { sileo } from 'sileo';
 import { attendance } from '@/api/endpoints';
 import { attendanceEditSchema, type AttendanceEditFormData } from '@/schemas/attendance';
 import type { AttendanceRecord } from '@/types/api';
+import { SkeletonForm } from '@/components/ui/Skeleton';
 
 const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -68,7 +69,7 @@ export default function AttendanceEditPage() {
     }
   };
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (loading) return <SkeletonForm fields={8} />;
   if (!record) return <p className="text-gray-500">Registro no encontrado.</p>;
 
   return (

@@ -1,10 +1,15 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '@/context/useAuth';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 function Loader() {
   return (
-    <div className="flex h-screen items-center justify-center text-gray-500">
-      Cargando...
+    <div className="flex h-screen items-center justify-center">
+      <div className="space-y-3 w-48">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
     </div>
   );
 }

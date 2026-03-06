@@ -1,16 +1,22 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { sileo } from 'sileo';
 import { imports } from '@/api/endpoints';
 import type { ImportBatch, PaginationMeta } from '@/types/api';
 import Pagination from '@/components/ui/Pagination';
 import StatusBadge from '@/components/ui/StatusBadge';
+import FileDropZone from '@/components/ui/FileDropZone';
 import { useAuth } from '@/context/useAuth';
 import { ApiError } from '@/api/client';
+import {
+  HiOutlineArrowUpTray,
+  HiOutlineArrowPath,
+  HiOutlineEye,
+} from 'react-icons/hi2';
+import { SkeletonTable } from '@/components/ui/Skeleton';
 
 export default function ImportPage() {
   const { isSuperadmin } = useAuth();
-  const fileRef = useRef<HTMLInputElement>(null);
   const [batches, setBatches] = useState<ImportBatch[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [page, setPage] = useState(1);
@@ -33,12 +39,7 @@ export default function ImportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  const handleUpload = async () => {
-    const file = fileRef.current?.files?.[0];
-    if (!file) {
-      sileo.warning({ title: 'Selecciona un archivo CSV' });
-      return;
-    }
+  const handleUpload = async (file: File) => {
     setUploading(true);
     try {
       const res = await imports.upload(file);
@@ -46,7 +47,6 @@ export default function ImportPage() {
         title: 'Archivo subido',
         description: `${res.data.total_rows} filas detectadas. Procesando...`,
       });
-      if (fileRef.current) fileRef.current.value = '';
       fetchBatches();
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -73,35 +73,25 @@ export default function ImportPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900">Importar CSV</h2>
+      <div className="flex items-center gap-2">
+        <HiOutlineArrowUpTray className="h-6 w-6 text-indigo-600" />
+        <h2 className="text-2xl font-bold text-gray-900">Importar CSV</h2>
+      </div>
 
       <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-gray-900">Subir archivo del biométrico</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 mb-4 text-sm text-gray-500">
           Archivo CSV con columnas: ID de persona, Hora. Máximo 10 MB.
         </p>
-        <div className="mt-4 flex items-center gap-4">
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".csv,.txt"
-            className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-600 file:cursor-pointer"
-          />
-          <button
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
-            onClick={handleUpload}
-            disabled={uploading}
-          >
-            {uploading ? 'Subiendo...' : 'Subir CSV'}
-          </button>
-        </div>
+        <FileDropZone onFileSelected={handleUpload} disabled={uploading} />
+        {uploading && <p className="mt-3 text-center text-sm text-indigo-600 animate-pulse">Subiendo archivo...</p>}
       </div>
 
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900">Historial de importaciones</h3>
 
         {loading ? (
-          <p className="text-gray-500">Cargando...</p>
+          <SkeletonTable cols={7} rows={4} />
         ) : (
           <>
             <div className="mt-4 overflow-x-auto rounded-xl bg-white shadow-sm">
@@ -127,10 +117,10 @@ export default function ImportPage() {
                       <td className={`px-4 py-3 ${b.failed_rows > 0 ? 'text-red-600 font-medium' : ''}`}>{b.failed_rows}</td>
                       <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
                       <td className="flex gap-2 px-4 py-3">
-                        <Link to={`/import/${b.id}`} className="text-sm text-indigo-600 hover:underline">Ver</Link>
+                        <Link to={`/import/${b.id}`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlineEye className="h-4 w-4" /> Ver</Link>
                         {isSuperadmin && b.status === 'completed' && (
-                          <button className="text-sm text-indigo-600 hover:underline cursor-pointer" onClick={() => handleReprocess(b.id)}>
-                            Reprocesar
+                          <button className="flex items-center gap-1 text-sm text-indigo-600 hover:underline cursor-pointer" onClick={() => handleReprocess(b.id)}>
+                            <HiOutlineArrowPath className="h-4 w-4" /> Reprocesar
                           </button>
                         )}
                       </td>

@@ -6,6 +6,13 @@ import Pagination from "@/components/ui/Pagination";
 import { useAuth } from "@/context/useAuth";
 import { sileo } from "sileo";
 import { ApiError } from "@/api/client";
+import {
+  HiOutlineUsers,
+  HiOutlineEye,
+  HiOutlinePencilSquare,
+  HiOutlinePower,
+} from "react-icons/hi2";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 export default function EmployeeListPage() {
   const { isSuperadmin } = useAuth();
@@ -45,10 +52,13 @@ export default function EmployeeListPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900">Empleados</h2>
+      <div className="flex items-center gap-2">
+        <HiOutlineUsers className="h-6 w-6 text-indigo-600" />
+        <h2 className="text-2xl font-bold text-gray-900">Empleados</h2>
+      </div>
 
       {loading ? (
-        <p className="mt-4 text-gray-500">Cargando...</p>
+        <SkeletonTable cols={6} rows={5} />
       ) : (
         <>
           <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
@@ -88,22 +98,23 @@ export default function EmployeeListPage() {
                       <div className="flex gap-2">
                         <Link
                           to={`/employees/${emp.id}`}
-                          className="text-sm text-indigo-600 hover:underline"
+                          className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"
                         >
-                          Ver
+                          <HiOutlineEye className="h-4 w-4" /> Ver
                         </Link>
                         {isSuperadmin && (
                           <>
                             <Link
                               to={`/employees/${emp.id}/edit`}
-                              className="text-sm text-indigo-600 hover:underline"
+                              className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"
                             >
-                              Editar
+                              <HiOutlinePencilSquare className="h-4 w-4" /> Editar
                             </Link>
                             <button
-                              className="text-sm text-indigo-600 hover:underline cursor-pointer"
+                              className="flex items-center gap-1 text-sm text-indigo-600 hover:underline cursor-pointer"
                               onClick={() => handleToggle(emp.id)}
                             >
+                              <HiOutlinePower className="h-4 w-4" />
                               {emp.is_active ? "Desactivar" : "Activar"}
                             </button>
                           </>

@@ -7,6 +7,7 @@ import { sileo } from 'sileo';
 import { shifts } from '@/api/endpoints';
 import { shiftSchema, type ShiftFormData } from '@/schemas/shifts';
 import type { Shift } from '@/types/api';
+import { SkeletonForm } from '@/components/ui/Skeleton';
 
 const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -61,7 +62,7 @@ export default function ShiftEditPage() {
     }
   };
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (loading) return <SkeletonForm fields={8} />;
   if (!shift) return <p className="text-gray-500">Turno no encontrado.</p>;
 
   return (

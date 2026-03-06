@@ -5,6 +5,13 @@ import type { Shift, PaginationMeta } from '@/types/api';
 import Pagination from '@/components/ui/Pagination';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
+import {
+  HiOutlineClock,
+  HiOutlinePencilSquare,
+  HiOutlineTrash,
+  HiOutlinePlusCircle,
+} from 'react-icons/hi2';
+import { SkeletonTable } from '@/components/ui/Skeleton';
 
 export default function ShiftListPage() {
   const { isSuperadmin } = useAuth();
@@ -37,14 +44,19 @@ export default function ShiftListPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Turnos</h2>
+        <div className="flex items-center gap-2">
+          <HiOutlineClock className="h-6 w-6 text-indigo-600" />
+          <h2 className="text-2xl font-bold text-gray-900">Turnos</h2>
+        </div>
         {isSuperadmin && (
-          <Link to="/shifts/create" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">+ Nuevo turno</Link>
+          <Link to="/shifts/create" className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+            <HiOutlinePlusCircle className="h-4 w-4" /> Nuevo turno
+          </Link>
         )}
       </div>
 
       {loading ? (
-        <p className="mt-4 text-gray-500">Cargando...</p>
+        <SkeletonTable cols={7} rows={5} />
       ) : (
         <>
           <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
@@ -80,8 +92,8 @@ export default function ShiftListPage() {
                       <div className="flex gap-2">
                         {isSuperadmin && (
                           <>
-                            <Link to={`/shifts/${shift.id}/edit`} className="text-sm text-indigo-600 hover:underline">Editar</Link>
-                            <button className="text-sm text-red-600 hover:underline cursor-pointer" onClick={() => handleDelete(shift.id, shift.name)}>Eliminar</button>
+                            <Link to={`/shifts/${shift.id}/edit`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlinePencilSquare className="h-4 w-4" /> Editar</Link>
+                            <button className="flex items-center gap-1 text-sm text-red-600 hover:underline cursor-pointer" onClick={() => handleDelete(shift.id, shift.name)}><HiOutlineTrash className="h-4 w-4" /> Eliminar</button>
                           </>
                         )}
                       </div>

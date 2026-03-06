@@ -4,6 +4,7 @@ import { imports } from '@/api/endpoints';
 import type { ImportBatch } from '@/types/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { sileo } from 'sileo';
+import { SkeletonDetail } from '@/components/ui/Skeleton';
 
 export default function ImportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +19,7 @@ export default function ImportDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (loading) return <SkeletonDetail rows={6} />;
   if (!batch) return <p className="text-gray-500">Importación no encontrada.</p>;
 
   return (

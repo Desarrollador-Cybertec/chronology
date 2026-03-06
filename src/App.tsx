@@ -24,7 +24,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Toaster position="top-right" />
+        <Toaster position="top-right" options={{ fill: '#1a1a2e', roundness: 12 }} />
         <Routes>
           {/* Guest routes */}
           <Route element={<GuestRoute />}>

@@ -5,6 +5,7 @@ import type { Employee, ShiftAssignment, ScheduleException } from '@/types/api';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
 import StatusBadge from '@/components/ui/StatusBadge';
+import { SkeletonDetail } from '@/components/ui/Skeleton';
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
@@ -33,7 +34,7 @@ export default function EmployeeDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (loading) return <SkeletonDetail rows={8} />;
   if (!employee) return <p className="text-gray-500">Empleado no encontrado.</p>;
 
   return (

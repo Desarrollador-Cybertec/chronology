@@ -6,6 +6,13 @@ import Pagination from '@/components/ui/Pagination';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
+import {
+  HiOutlineClipboardDocumentCheck,
+  HiOutlineFunnel,
+  HiOutlineEye,
+  HiOutlinePencilSquare,
+} from 'react-icons/hi2';
+import { SkeletonTable } from '@/components/ui/Skeleton';
 
 const inputBase = 'rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -58,7 +65,10 @@ export default function AttendanceListPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900">Asistencia</h2>
+      <div className="flex items-center gap-2">
+        <HiOutlineClipboardDocumentCheck className="h-6 w-6 text-indigo-600" />
+        <h2 className="text-2xl font-bold text-gray-900">Asistencia</h2>
+      </div>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
         <input type="number" placeholder="ID empleado" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={`${inputBase} w-32`} />
@@ -72,11 +82,11 @@ export default function AttendanceListPage() {
           <option value="rest">Descanso</option>
           <option value="holiday">Feriado</option>
         </select>
-        <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 cursor-pointer" onClick={applyFilters}>Filtrar</button>
+        <button className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 cursor-pointer" onClick={applyFilters}><HiOutlineFunnel className="h-4 w-4" /> Filtrar</button>
       </div>
 
       {loading ? (
-        <p className="mt-4 text-gray-500">Cargando...</p>
+        <SkeletonTable cols={10} rows={5} />
       ) : (
         <>
           <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
@@ -120,9 +130,9 @@ export default function AttendanceListPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Link to={`/attendance/${rec.id}`} className="text-sm text-indigo-600 hover:underline">Ver</Link>
+                        <Link to={`/attendance/${rec.id}`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlineEye className="h-4 w-4" /> Ver</Link>
                         {isSuperadmin && (
-                          <Link to={`/attendance/${rec.id}/edit`} className="text-sm text-indigo-600 hover:underline">Editar</Link>
+                          <Link to={`/attendance/${rec.id}/edit`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlinePencilSquare className="h-4 w-4" /> Editar</Link>
                         )}
                       </div>
                     </td>
