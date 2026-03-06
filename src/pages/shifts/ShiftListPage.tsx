@@ -12,6 +12,8 @@ import {
   HiOutlinePlusCircle,
 } from 'react-icons/hi2';
 import { SkeletonTable } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { shiftListSteps, shiftListAdminSteps } from '@/data/pageTutorials';
 
 export default function ShiftListPage() {
   const { isSuperadmin } = useAuth();
@@ -48,11 +50,14 @@ export default function ShiftListPage() {
           <HiOutlineClock className="h-6 w-6 text-indigo-600" />
           <h2 className="text-2xl font-bold text-gray-900">Turnos</h2>
         </div>
-        {isSuperadmin && (
-          <Link to="/shifts/create" className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-            <HiOutlinePlusCircle className="h-4 w-4" /> Nuevo turno
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <TutorialModal steps={isSuperadmin ? shiftListAdminSteps : shiftListSteps} />
+          {isSuperadmin && (
+            <Link to="/shifts/create" className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+              <HiOutlinePlusCircle className="h-4 w-4" /> Nuevo turno
+            </Link>
+          )}
+        </div>
       </div>
 
       {loading ? (

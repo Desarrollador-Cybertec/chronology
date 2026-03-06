@@ -5,6 +5,8 @@ import type { ImportBatch } from '@/types/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { sileo } from 'sileo';
 import { SkeletonDetail } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { importDetailSteps } from '@/data/pageTutorials';
 
 export default function ImportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,7 +27,10 @@ export default function ImportDetailPage() {
   return (
     <div>
       <Link to="/import" className="text-sm text-indigo-600 hover:underline">← Importaciones</Link>
-      <h2 className="mt-1 text-2xl font-bold text-gray-900">Importación #{batch.id}</h2>
+      <div className="mt-1 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Importación #{batch.id}</h2>
+        <TutorialModal steps={importDetailSteps} />
+      </div>
 
       <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
         <dl className="grid gap-4 sm:grid-cols-2">

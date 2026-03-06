@@ -6,6 +6,8 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
 import { SkeletonDetail } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { attendanceDetailSteps } from '@/data/pageTutorials';
 
 function formatMinutes(min: number): string {
   const h = Math.floor(min / 60);
@@ -37,11 +39,14 @@ export default function AttendanceDetailPage() {
           <Link to="/attendance" className="text-sm text-indigo-600 hover:underline">← Asistencia</Link>
           <h2 className="text-2xl font-bold text-gray-900">Detalle de asistencia — {record.date_reference}</h2>
         </div>
-        {isSuperadmin && (
-          <Link to={`/attendance/${record.id}/edit`} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-            Editar
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <TutorialModal steps={attendanceDetailSteps} />
+          {isSuperadmin && (
+            <Link to={`/attendance/${record.id}/edit`} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+              Editar
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">

@@ -7,6 +7,8 @@ import { employees } from '@/api/endpoints';
 import { employeeUpdateSchema, type EmployeeUpdateFormData } from '@/schemas/employees';
 import type { Employee } from '@/types/api';
 import { SkeletonForm } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { employeeEditSteps } from '@/data/pageTutorials';
 
 const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -55,7 +57,10 @@ export default function EmployeeEditPage() {
   return (
     <div>
       <Link to={`/employees/${id}`} className="text-sm text-indigo-600 hover:underline">← Volver</Link>
-      <h2 className="mt-1 text-2xl font-bold text-gray-900">Editar empleado</h2>
+      <div className="mt-1 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Editar empleado</h2>
+        <TutorialModal steps={employeeEditSteps} />
+      </div>
 
       <div className="mt-6 max-w-2xl rounded-xl bg-white p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">

@@ -8,6 +8,8 @@ import { shifts } from '@/api/endpoints';
 import { shiftSchema, type ShiftFormData } from '@/schemas/shifts';
 import type { Shift } from '@/types/api';
 import { SkeletonForm } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { shiftFormSteps } from '@/data/pageTutorials';
 
 const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -68,7 +70,10 @@ export default function ShiftEditPage() {
   return (
     <div>
       <Link to="/shifts" className="text-sm text-indigo-600 hover:underline">← Turnos</Link>
-      <h2 className="mt-1 text-2xl font-bold text-gray-900">Editar: {shift.name}</h2>
+      <div className="mt-1 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Editar: {shift.name}</h2>
+        <TutorialModal steps={shiftFormSteps} />
+      </div>
 
       <div className="mt-6 max-w-2xl rounded-xl bg-white p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">

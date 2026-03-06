@@ -13,6 +13,8 @@ import {
   HiOutlinePower,
 } from "react-icons/hi2";
 import { SkeletonTable } from "@/components/ui/Skeleton";
+import TutorialModal from "@/components/ui/TutorialModal";
+import { employeeListSteps, employeeListAdminSteps } from "@/data/pageTutorials";
 
 export default function EmployeeListPage() {
   const { isSuperadmin } = useAuth();
@@ -52,9 +54,12 @@ export default function EmployeeListPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <HiOutlineUsers className="h-6 w-6 text-indigo-600" />
-        <h2 className="text-2xl font-bold text-gray-900">Empleados</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <HiOutlineUsers className="h-6 w-6 text-indigo-600" />
+          <h2 className="text-2xl font-bold text-gray-900">Empleados</h2>
+        </div>
+        <TutorialModal steps={isSuperadmin ? employeeListAdminSteps : employeeListSteps} />
       </div>
 
       {loading ? (

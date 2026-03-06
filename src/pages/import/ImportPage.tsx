@@ -14,6 +14,8 @@ import {
   HiOutlineEye,
 } from 'react-icons/hi2';
 import { SkeletonTable } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { importPageSteps, importPageAdminSteps } from '@/data/pageTutorials';
 
 export default function ImportPage() {
   const { isSuperadmin } = useAuth();
@@ -73,9 +75,12 @@ export default function ImportPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <HiOutlineArrowUpTray className="h-6 w-6 text-indigo-600" />
-        <h2 className="text-2xl font-bold text-gray-900">Importar CSV</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <HiOutlineArrowUpTray className="h-6 w-6 text-indigo-600" />
+          <h2 className="text-2xl font-bold text-gray-900">Importar CSV</h2>
+        </div>
+        <TutorialModal steps={isSuperadmin ? importPageAdminSteps : importPageSteps} />
       </div>
 
       <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">

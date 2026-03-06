@@ -13,6 +13,8 @@ import {
   HiOutlinePencilSquare,
 } from 'react-icons/hi2';
 import { SkeletonTable } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { attendanceListSteps, attendanceListAdminSteps } from '@/data/pageTutorials';
 
 const inputBase = 'rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -65,9 +67,12 @@ export default function AttendanceListPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <HiOutlineClipboardDocumentCheck className="h-6 w-6 text-indigo-600" />
-        <h2 className="text-2xl font-bold text-gray-900">Asistencia</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <HiOutlineClipboardDocumentCheck className="h-6 w-6 text-indigo-600" />
+          <h2 className="text-2xl font-bold text-gray-900">Asistencia</h2>
+        </div>
+        <TutorialModal steps={isSuperadmin ? attendanceListAdminSteps : attendanceListSteps} />
       </div>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">

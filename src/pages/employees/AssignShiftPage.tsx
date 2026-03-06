@@ -7,6 +7,8 @@ import { sileo } from 'sileo';
 import { shiftAssignments, shifts as shiftsApi } from '@/api/endpoints';
 import { shiftAssignmentSchema, type ShiftAssignmentFormData } from '@/schemas/assignments';
 import type { Shift } from '@/types/api';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { assignShiftSteps } from '@/data/pageTutorials';
 
 const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -67,7 +69,10 @@ export default function AssignShiftPage() {
   return (
     <div>
       <Link to={`/employees/${employeeId}`} className="text-sm text-indigo-600 hover:underline">← Volver</Link>
-      <h2 className="mt-1 text-2xl font-bold text-gray-900">Asignar turno</h2>
+      <div className="mt-1 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Asignar turno</h2>
+        <TutorialModal steps={assignShiftSteps} />
+      </div>
 
       <div className="mt-6 max-w-2xl rounded-xl bg-white p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">

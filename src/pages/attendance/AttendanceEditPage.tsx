@@ -8,6 +8,8 @@ import { attendance } from '@/api/endpoints';
 import { attendanceEditSchema, type AttendanceEditFormData } from '@/schemas/attendance';
 import type { AttendanceRecord } from '@/types/api';
 import { SkeletonForm } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { attendanceEditSteps } from '@/data/pageTutorials';
 
 const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
 
@@ -75,7 +77,10 @@ export default function AttendanceEditPage() {
   return (
     <div>
       <Link to={`/attendance/${id}`} className="text-sm text-indigo-600 hover:underline">← Volver</Link>
-      <h2 className="mt-1 text-2xl font-bold text-gray-900">Editar asistencia — {record.date_reference}</h2>
+      <div className="mt-1 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Editar asistencia — {record.date_reference}</h2>
+        <TutorialModal steps={attendanceEditSteps} />
+      </div>
       <p className="text-sm text-gray-500">{record.employee.first_name} {record.employee.last_name}</p>
 
       <div className="mt-6 max-w-2xl rounded-xl bg-white p-6 shadow-sm">

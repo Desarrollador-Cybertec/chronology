@@ -7,6 +7,8 @@ import { settings } from '@/api/endpoints';
 import { settingSchema, type SettingsFormData } from '@/schemas/settings';
 import { HiOutlineCog6Tooth, HiOutlineCheckCircle } from 'react-icons/hi2';
 import { SkeletonForm } from '@/components/ui/Skeleton';
+import TutorialModal from '@/components/ui/TutorialModal';
+import { settingsSteps } from '@/data/pageTutorials';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -66,9 +68,12 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <HiOutlineCog6Tooth className="h-6 w-6 text-indigo-600" />
-        <h2 className="text-2xl font-bold text-gray-900">Configuración del Sistema</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <HiOutlineCog6Tooth className="h-6 w-6 text-indigo-600" />
+          <h2 className="text-2xl font-bold text-gray-900">Configuración del Sistema</h2>
+        </div>
+        <TutorialModal steps={settingsSteps} />
       </div>
 
       <div className="mt-6 max-w-3xl rounded-xl bg-white p-6 shadow-sm">
