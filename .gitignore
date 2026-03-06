@@ -13,6 +13,7 @@ dist-ssr
 *.local
 package-lock.json
 /context
+.env
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +25,4 @@ package-lock.json
 *.njsproj
 *.sln
 *.sw?
+*.md

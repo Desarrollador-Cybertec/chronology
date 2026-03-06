@@ -1,35 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router';
+import { Toaster } from 'sileo';
+import { AuthProvider } from '@/context/AuthContext';
+import { ProtectedRoute, SuperadminRoute, GuestRoute } from '@/components/layout/ProtectedRoute';
+import AppLayout from '@/components/layout/AppLayout';
+import LoginPage from '@/pages/LoginPage';
+import RegisterPage from '@/pages/RegisterPage';
+import DashboardPage from '@/pages/DashboardPage';
+import EmployeeListPage from '@/pages/employees/EmployeeListPage';
+import EmployeeDetailPage from '@/pages/employees/EmployeeDetailPage';
+import EmployeeEditPage from '@/pages/employees/EmployeeEditPage';
+import AssignShiftPage from '@/pages/employees/AssignShiftPage';
+import ShiftListPage from '@/pages/shifts/ShiftListPage';
+import ShiftFormPage from '@/pages/shifts/ShiftFormPage';
+import ShiftEditPage from '@/pages/shifts/ShiftEditPage';
+import AttendanceListPage from '@/pages/attendance/AttendanceListPage';
+import AttendanceDetailPage from '@/pages/attendance/AttendanceDetailPage';
+import AttendanceEditPage from '@/pages/attendance/AttendanceEditPage';
+import ImportPage from '@/pages/import/ImportPage';
+import ImportDetailPage from '@/pages/import/ImportDetailPage';
+import SettingsPage from '@/pages/settings/SettingsPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <AuthProvider>
+        <Toaster position="top-right" />
+        <Routes>
+          {/* Guest routes */}
+          <Route element={<GuestRoute />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
+
+          {/* Authenticated routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<DashboardPage />} />
+
+              {/* Employees */}
+              <Route path="/employees" element={<EmployeeListPage />} />
+              <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+
+              {/* Shifts */}
+              <Route path="/shifts" element={<ShiftListPage />} />
+
+              {/* Attendance */}
+              <Route path="/attendance" element={<AttendanceListPage />} />
+              <Route path="/attendance/:id" element={<AttendanceDetailPage />} />
+
+              {/* Import */}
+              <Route path="/import" element={<ImportPage />} />
+              <Route path="/import/:id" element={<ImportDetailPage />} />
+
+              {/* Superadmin routes */}
+              <Route element={<SuperadminRoute />}>
+                <Route path="/employees/:id/edit" element={<EmployeeEditPage />} />
+                <Route path="/employees/:employeeId/assign-shift" element={<AssignShiftPage />} />
+                <Route path="/shifts/create" element={<ShiftFormPage />} />
+                <Route path="/shifts/:id/edit" element={<ShiftEditPage />} />
+                <Route path="/attendance/:id/edit" element={<AttendanceEditPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

@@ -1,0 +1,65 @@
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router';
+import { imports } from '@/api/endpoints';
+import type { ImportBatch } from '@/types/api';
+import StatusBadge from '@/components/ui/StatusBadge';
+import { sileo } from 'sileo';
+
+export default function ImportDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const [batch, setBatch] = useState<ImportBatch | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    imports.get(Number(id))
+      .then((res) => setBatch(res.data))
+      .catch(() => sileo.error({ title: 'Error al cargar importación' }))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <p className="text-gray-500">Cargando...</p>;
+  if (!batch) return <p className="text-gray-500">Importación no encontrada.</p>;
+
+  return (
+    <div>
+      <Link to="/import" className="text-sm text-indigo-600 hover:underline">← Importaciones</Link>
+      <h2 className="mt-1 text-2xl font-bold text-gray-900">Importación #{batch.id}</h2>
+
+      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+        <dl className="grid gap-4 sm:grid-cols-2">
+          {[
+            ['Archivo', batch.original_filename],
+            ['Total filas', batch.total_rows],
+            ['Procesadas', batch.processed_rows],
+            ['Procesado', batch.processed_at ? new Date(batch.processed_at).toLocaleString() : 'Pendiente'],
+          ].map(([label, value]) => (
+            <div key={label as string} className="flex justify-between border-b border-gray-100 pb-2">
+              <dt className="text-sm text-gray-500">{label}</dt>
+              <dd className="text-sm font-medium text-gray-900">{value}</dd>
+            </div>
+          ))}
+          <div className="flex justify-between border-b border-gray-100 pb-2">
+            <dt className="text-sm text-gray-500">Estado</dt>
+            <dd><StatusBadge status={batch.status} /></dd>
+          </div>
+          <div className="flex justify-between border-b border-gray-100 pb-2">
+            <dt className="text-sm text-gray-500">Fallidas</dt>
+            <dd className={`text-sm font-medium ${batch.failed_rows > 0 ? 'text-red-600' : 'text-gray-900'}`}>{batch.failed_rows}</dd>
+          </div>
+        </dl>
+
+        {batch.errors && batch.errors.length > 0 && (
+          <div className="mt-6">
+            <h4 className="text-sm font-semibold text-gray-900">Errores</h4>
+            <ul className="mt-2 space-y-1">
+              {batch.errors.map((e, i) => (
+                <li key={i} className="text-sm text-red-600">• {e}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
