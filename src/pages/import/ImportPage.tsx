@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { sileo } from 'sileo';
 import { imports } from '@/api/endpoints';
 import type { ImportBatch, PaginationMeta } from '@/types/api';
@@ -21,6 +21,7 @@ import { useTableSort } from '@/hooks/useTableSort';
 import SortableHeader from '@/components/ui/SortableHeader';
 
 export default function ImportPage() {
+  const navigate = useNavigate();
   const { isSuperadmin } = useAuth();
   const [batches, setBatches] = useState<ImportBatch[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -109,7 +110,14 @@ export default function ImportPage() {
           <div className="mt-4">
             <ProcessingIndicator
               batch={processingBatch}
-              onComplete={() => { setProcessingBatch(null); fetchBatches(); }}
+              onComplete={(b) => {
+                setProcessingBatch(null);
+                if (b.status === 'completed') {
+                  navigate('/');
+                } else {
+                  fetchBatches();
+                }
+              }}
             />
           </div>
         )}

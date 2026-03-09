@@ -8,6 +8,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { SkeletonDetail } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { employeeDetailSteps, employeeDetailAdminSteps } from '@/data/pageTutorials';
+import { HiOutlineTrash } from 'react-icons/hi2';
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
@@ -35,6 +36,18 @@ export default function EmployeeDetailPage() {
       .catch(() => sileo.error({ title: 'Error al cargar empleado' }))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const handleUnassign = async (assignmentId: number) => {
+    const target = assignments.find((a) => a.id === assignmentId);
+    if (!confirm(`¿Desasignar turno "${target?.shift?.name ?? ''}"?`)) return;
+    try {
+      await shiftAssignments.delete(assignmentId);
+      setAssignments((prev) => prev.filter((a) => a.id !== assignmentId));
+      sileo.success({ title: 'Turno desasignado' });
+    } catch {
+      sileo.error({ title: 'Error al desasignar turno' });
+    }
+  };
 
   if (loading) return <SkeletonDetail rows={8} />;
   if (!employee) return <p className="text-gray-400">Empleado no encontrado.</p>;
@@ -101,7 +114,7 @@ export default function EmployeeDetailPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
-                  <tr><th className="pb-2">Turno</th><th className="pb-2">Desde</th><th className="pb-2">Hasta</th><th className="pb-2">Días</th></tr>
+                  <tr><th className="pb-2">Turno</th><th className="pb-2">Desde</th><th className="pb-2">Hasta</th><th className="pb-2">Días</th>{isSuperadmin && <th className="pb-2"></th>}</tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {assignments.map((a) => (
@@ -110,6 +123,18 @@ export default function EmployeeDetailPage() {
                       <td className="py-2">{a.effective_date}</td>
                       <td className="py-2">{a.end_date ?? 'Indefinido'}</td>
                       <td className="py-2">{a.work_days.map((d) => DAY_NAMES[d]).join(', ')}</td>
+                      {isSuperadmin && (
+                        <td className="py-2">
+                          <button
+                            type="button"
+                            className="rounded-md p-1.5 text-gray-400 transition hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
+                            title="Desasignar turno"
+                            onClick={() => handleUnassign(a.id)}
+                          >
+                            <HiOutlineTrash className="h-4 w-4" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

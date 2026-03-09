@@ -10,8 +10,6 @@ export const shiftBreakSchema = z.object({
   position: z.coerce.number().min(0),
 });
 
-type ShiftBreakFormData = z.infer<typeof shiftBreakSchema>;
-
 export const shiftSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   start_time: z.string().regex(timeRegex, 'Formato HH:mm'),

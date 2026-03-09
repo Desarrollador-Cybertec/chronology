@@ -191,7 +191,10 @@ export default function DashboardPage() {
           <div className="mt-3">
             <ProcessingIndicator
               batch={processingBatch}
-              onComplete={() => setProcessingBatch(null)}
+              onComplete={() => {
+                setProcessingBatch(null);
+                window.location.reload();
+              }}
             />
           </div>
         )}

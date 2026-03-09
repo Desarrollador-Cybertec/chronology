@@ -1,8 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import type { Resolver } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { sileo } from 'sileo';
 import { employees as employeesApi, shifts as shiftsApi, shiftAssignments } from '@/api/endpoints';
 import type { Employee, Shift, PaginationMeta } from '@/types/api';
@@ -12,34 +8,17 @@ import { SkeletonTable } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { shiftAssignmentPageSteps, shiftAssignmentPageAdminSteps } from '@/data/pageTutorials';
 import SortableHeader from '@/components/ui/SortableHeader';
-import {
-  HiOutlineUserGroup,
-  HiOutlineCheckCircle,
-  HiOutlineXCircle,
-  HiOutlineClock,
-  HiOutlineMagnifyingGlass,
-} from 'react-icons/hi2';
+import AssignShiftForm from './AssignShiftForm';
+import type { AssignFormData } from './AssignShiftForm';
+import EmployeeAssignRow from './EmployeeAssignRow';
+import { HiOutlineUserGroup, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 
-const assignSchema = z.object({
-  shift_id: z.coerce.number().min(1, 'Selecciona un turno'),
-  effective_date: z.string().min(1, 'La fecha de inicio es requerida'),
-  end_date: z.string().optional().or(z.literal('')),
-  work_days: z.array(z.number().min(0).max(6)).min(1, 'Selecciona al menos un día'),
-});
-
-type AssignFormData = z.infer<typeof assignSchema>;
-
-const inputBase = 'w-full rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
-
-const DAY_OPTIONS = [
-  { value: 1, label: 'Lun' },
-  { value: 2, label: 'Mar' },
-  { value: 3, label: 'Mié' },
-  { value: 4, label: 'Jue' },
-  { value: 5, label: 'Vie' },
-  { value: 6, label: 'Sáb' },
-  { value: 0, label: 'Dom' },
-];
+function getCurrentShift(emp: Employee) {
+  const today = new Date().toISOString().slice(0, 10);
+  return emp.shift_assignments?.find(
+    (a) => a.effective_date <= today && (!a.end_date || a.end_date >= today),
+  );
+}
 
 export default function ShiftAssignmentPage() {
   const { isSuperadmin } = useAuth();
@@ -63,36 +42,23 @@ export default function ShiftAssignmentPage() {
     _setPage(1);
   }, [sortKey]);
 
-  // Map backend sort keys back to frontend column names for SortableHeader
   const displaySortKey = sortKey === 'current_shift' ? 'shift' : sortKey === 'last_name' ? 'name' : sortKey;
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    control,
-    formState: { errors },
-  } = useForm<AssignFormData>({
-    resolver: zodResolver(assignSchema) as Resolver<AssignFormData>,
-    defaultValues: { work_days: [1, 2, 3, 4, 5] },
-  });
-
-  const workDays = useWatch({ control, name: 'work_days' });
 
   useEffect(() => {
     shiftsApi.list(1).then((res) => setShifts(res.data));
   }, []);
 
   useEffect(() => {
+    if (search === searchDebounced) return;
     const timer = setTimeout(() => {
       setLoading(true);
       setSearchDebounced(search);
       _setPage(1);
     }, 400);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, searchDebounced]);
 
   useEffect(() => {
     employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
@@ -100,12 +66,6 @@ export default function ShiftAssignmentPage() {
       .catch(() => sileo.error({ title: 'Error al cargar empleados' }))
       .finally(() => setLoading(false));
   }, [page, searchDebounced, sortKey, sortDir]);
-
-  const toggleDay = (day: number) => {
-    const current = workDays ?? [];
-    const next = current.includes(day) ? current.filter((d) => d !== day) : [...current, day];
-    setValue('work_days', next, { shouldValidate: true });
-  };
 
   const toggleEmployee = (id: number) => {
     setSelected((prev) => {
@@ -161,7 +121,6 @@ export default function ShiftAssignmentPage() {
 
     if (ok > 0) {
       setSelected(new Set());
-      // Refresh employee list to show updated shift assignments
       setLoading(true);
       employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
         .then((res) => { setEmpList(res.data); setMeta(res.meta); })
@@ -169,12 +128,18 @@ export default function ShiftAssignmentPage() {
     }
   };
 
-  const getCurrentShift = (emp: Employee) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const active = emp.shift_assignments?.find(
-      (a) => a.effective_date <= today && (!a.end_date || a.end_date >= today),
-    );
-    return active;
+  const handleUnassign = async (assignmentId: number, empName: string) => {
+    if (!confirm(`¿Desasignar turno de ${empName}?`)) return;
+    try {
+      await shiftAssignments.delete(assignmentId);
+      sileo.success({ title: `Turno desasignado de ${empName}` });
+      setLoading(true);
+      employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
+        .then((res) => { setEmpList(res.data); setMeta(res.meta); })
+        .finally(() => setLoading(false));
+    } catch {
+      sileo.error({ title: 'Error al desasignar turno' });
+    }
   };
 
   const activeOnPage = empList.filter((e) => e.is_active).map((e) => e.id);
@@ -190,66 +155,15 @@ export default function ShiftAssignmentPage() {
         <TutorialModal steps={isSuperadmin ? shiftAssignmentPageAdminSteps : shiftAssignmentPageSteps} />
       </div>
 
-      {/* Assignment form — superadmin only */}
       {isSuperadmin && (
-        <div className="mt-6 rounded-xl bg-grafito p-5 shadow-sm">
-          <h3 className="mb-4 text-sm font-semibold text-white">Asignar turno a empleados seleccionados</h3>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-wrap items-end gap-4">
-            <div className="min-w-[180px] flex-1">
-              <label htmlFor="shift_id" className="mb-1 block text-xs font-medium text-gray-300">Turno</label>
-              <select id="shift_id" {...register('shift_id')} className={`${inputBase} ${errors.shift_id ? 'border-red-400' : ''}`}>
-                <option value="">Seleccionar turno...</option>
-                {shifts.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.start_time} – {s.end_time})</option>
-                ))}
-              </select>
-              {errors.shift_id && <span className="mt-1 block text-xs text-red-400">{errors.shift_id.message}</span>}
-            </div>
-
-            <div className="min-w-[150px]">
-              <label htmlFor="effective_date" className="mb-1 block text-xs font-medium text-gray-300">Fecha inicio</label>
-              <input id="effective_date" type="date" {...register('effective_date')} className={`${inputBase} ${errors.effective_date ? 'border-red-400' : ''}`} />
-              {errors.effective_date && <span className="mt-1 block text-xs text-red-400">{errors.effective_date.message}</span>}
-            </div>
-
-            <div className="min-w-[150px]">
-              <label htmlFor="end_date" className="mb-1 block text-xs font-medium text-gray-300">Fecha fin (opc.)</label>
-              <input id="end_date" type="date" {...register('end_date')} className={inputBase} />
-            </div>
-
-            <div>
-              <label id="work-days-label" className="mb-1 block text-xs font-medium text-gray-300">Días</label>
-              <div className="flex gap-1" role="group" aria-labelledby="work-days-label">
-                {DAY_OPTIONS.map((d) => (
-                  <button
-                    key={d.value}
-                    type="button"
-                    className={`rounded-md border px-2 py-1.5 text-xs font-medium transition cursor-pointer ${
-                      workDays?.includes(d.value)
-                        ? 'border-radar bg-radar/10 text-radar'
-                        : 'border-white/10 text-gray-400 hover:bg-grafito-lighter'
-                    }`}
-                    onClick={() => toggleDay(d.value)}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-              {errors.work_days && <span className="mt-1 block text-xs text-red-400">{errors.work_days.message}</span>}
-            </div>
-
-            <button
-              type="submit"
-              className="rounded-lg bg-radar px-5 py-2 text-sm font-semibold text-white hover:bg-radar-dark disabled:opacity-50 cursor-pointer"
-              disabled={assigning || selected.size === 0}
-            >
-              {assigning ? 'Asignando...' : `Asignar a ${selected.size} empleado${selected.size !== 1 ? 's' : ''}`}
-            </button>
-          </form>
-        </div>
+        <AssignShiftForm
+          shifts={shifts}
+          selectedCount={selected.size}
+          assigning={assigning}
+          onSubmit={onSubmit}
+        />
       )}
 
-      {/* Employee table with selection */}
       <div className="mt-4">
         <div className="relative max-w-sm">
           <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -286,69 +200,24 @@ export default function ShiftAssignmentPage() {
                   <SortableHeader label="Turno actual" column="shift" sortKey={displaySortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Vigencia</th>
                   <SortableHeader label="Estado" column="is_active" sortKey={displaySortKey} sortDir={sortDir} onSort={toggle} />
+                  {isSuperadmin && <th className="px-4 py-3">Acciones</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {empList.map((emp) => {
-                  const assignment = getCurrentShift(emp);
-                  const isSelected = selected.has(emp.id);
-                  return (
-                    <tr
-                      key={emp.id}
-                      className={`transition-colors ${isSelected ? 'bg-radar/5' : 'hover:bg-grafito-lighter'} ${!emp.is_active ? 'opacity-50' : ''}`}
-                    >
-                      {isSuperadmin && (
-                        <td className="px-4 py-3">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleEmployee(emp.id)}
-                            disabled={!emp.is_active}
-                            className="h-4 w-4 rounded border-white/10 bg-grafito-light accent-radar cursor-pointer disabled:opacity-30"
-                          />
-                        </td>
-                      )}
-                      <td className="px-4 py-3 text-gray-400">{emp.internal_id}</td>
-                      <td className="px-4 py-3 font-medium text-white">{emp.first_name} {emp.last_name}</td>
-                      <td className="px-4 py-3 text-gray-300">{emp.department ?? '—'}</td>
-                      <td className="px-4 py-3">
-                        {assignment?.shift ? (
-                          <span className="inline-flex items-center gap-1.5 text-sm">
-                            <HiOutlineClock className="h-4 w-4 text-radar" />
-                            <span className="text-white">{assignment.shift.name}</span>
-                            <span className="text-gray-400">({assignment.shift.start_time} – {assignment.shift.end_time})</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-sm text-amber-400">
-                            <HiOutlineXCircle className="h-4 w-4" /> Sin turno
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-gray-400">
-                        {assignment ? (
-                          <>
-                            {assignment.effective_date}
-                            {assignment.end_date ? ` → ${assignment.end_date}` : ' → ∞'}
-                          </>
-                        ) : '—'}
-                      </td>
-                      <td className="px-4 py-3">
-                        {emp.is_active ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
-                            <HiOutlineCheckCircle className="h-4 w-4" /> Activo
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-red-400">
-                            <HiOutlineXCircle className="h-4 w-4" /> Inactivo
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {empList.map((emp) => (
+                  <EmployeeAssignRow
+                    key={emp.id}
+                    emp={emp}
+                    assignment={getCurrentShift(emp)}
+                    isSelected={selected.has(emp.id)}
+                    isSuperadmin={isSuperadmin}
+                    onToggle={toggleEmployee}
+                    onUnassign={handleUnassign}
+                  />
+                ))}
                 {empList.length === 0 && (
                   <tr>
-                    <td colSpan={isSuperadmin ? 7 : 6} className="px-4 py-8 text-center text-sm text-gray-400">
+                    <td colSpan={isSuperadmin ? 8 : 6} className="px-4 py-8 text-center text-sm text-gray-400">
                       No hay empleados registrados.
                     </td>
                   </tr>

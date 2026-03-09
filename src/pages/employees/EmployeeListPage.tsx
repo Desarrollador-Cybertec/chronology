@@ -39,13 +39,14 @@ export default function EmployeeListPage() {
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
   useEffect(() => {
+    if (search === searchDebounced) return;
     const timer = setTimeout(() => {
       setLoading(true);
       setSearchDebounced(search);
       _setPage(1);
     }, 400);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, searchDebounced]);
 
   useEffect(() => {
     employees
