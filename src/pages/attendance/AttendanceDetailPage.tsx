@@ -30,19 +30,19 @@ export default function AttendanceDetailPage() {
   }, [id]);
 
   if (loading) return <SkeletonDetail rows={10} />;
-  if (!record) return <p className="text-gray-500">Registro no encontrado.</p>;
+  if (!record) return <p className="text-gray-400">Registro no encontrado.</p>;
 
   return (
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <Link to="/attendance" className="text-sm text-indigo-600 hover:underline">← Asistencia</Link>
-          <h2 className="text-2xl font-bold text-gray-900">Detalle de asistencia — {record.date_reference}</h2>
+          <Link to="/attendance" className="text-sm text-radar hover:underline">← Asistencia</Link>
+          <h2 className="text-2xl font-bold text-white">Detalle de asistencia — {record.date_reference}</h2>
         </div>
         <div className="flex items-center gap-2">
           <TutorialModal steps={attendanceDetailSteps} />
           {isSuperadmin && (
-            <Link to={`/attendance/${record.id}/edit`} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+            <Link to={`/attendance/${record.id}/edit`} className="rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark">
               Editar
             </Link>
           )}
@@ -50,46 +50,46 @@ export default function AttendanceDetailPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-xl bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Empleado</h3>
+        <div className="rounded-xl bg-grafito p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-white">Empleado</h3>
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-gray-500">Nombre</dt><dd>
-              <Link to={`/employees/${record.employee_id}`} className="font-medium text-indigo-600 hover:underline">
+            <div className="flex justify-between"><dt className="text-gray-400">Nombre</dt><dd>
+              <Link to={`/employees/${record.employee_id}`} className="font-medium text-radar hover:underline">
                 {record.employee.first_name} {record.employee.last_name}
               </Link>
             </dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">Turno</dt><dd className="font-medium">{record.shift?.name ?? '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Turno</dt><dd className="font-medium">{record.shift?.name ?? '—'}</dd></div>
           </dl>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Marcajes</h3>
+        <div className="rounded-xl bg-grafito p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-white">Marcajes</h3>
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-gray-500">Entrada</dt><dd className="font-medium">{record.first_check_in ?? '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">Salida</dt><dd className="font-medium">{record.last_check_out ?? '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">Minutos trabajados</dt><dd className="font-medium">{formatMinutes(record.worked_minutes)}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Entrada</dt><dd className="font-medium">{record.first_check_in ?? '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Salida</dt><dd className="font-medium">{record.last_check_out ?? '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Minutos trabajados</dt><dd className="font-medium">{formatMinutes(record.worked_minutes)}</dd></div>
           </dl>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Cálculos</h3>
+        <div className="rounded-xl bg-grafito p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-white">Cálculos</h3>
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-gray-500">Tardanza</dt><dd className={record.late_minutes > 0 ? 'font-medium text-red-600' : 'font-medium'}>{record.late_minutes > 0 ? formatMinutes(record.late_minutes) : '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">Salida temprana</dt><dd className="font-medium">{record.early_departure_minutes > 0 ? formatMinutes(record.early_departure_minutes) : '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">HE Total</dt><dd className="font-medium">{record.overtime_minutes > 0 ? formatMinutes(record.overtime_minutes) : '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">HE Diurnas</dt><dd className="font-medium">{record.overtime_diurnal_minutes > 0 ? formatMinutes(record.overtime_diurnal_minutes) : '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">HE Nocturnas</dt><dd className="font-medium">{record.overtime_nocturnal_minutes > 0 ? formatMinutes(record.overtime_nocturnal_minutes) : '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-gray-500">Estado</dt><dd><StatusBadge status={record.status} /></dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Tardanza</dt><dd className={record.late_minutes > 0 ? 'font-medium text-red-600' : 'font-medium'}>{record.late_minutes > 0 ? formatMinutes(record.late_minutes) : '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Salida temprana</dt><dd className="font-medium">{record.early_departure_minutes > 0 ? formatMinutes(record.early_departure_minutes) : '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">HE Total</dt><dd className="font-medium">{record.overtime_minutes > 0 ? formatMinutes(record.overtime_minutes) : '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">HE Diurnas</dt><dd className="font-medium">{record.overtime_diurnal_minutes > 0 ? formatMinutes(record.overtime_diurnal_minutes) : '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">HE Nocturnas</dt><dd className="font-medium">{record.overtime_nocturnal_minutes > 0 ? formatMinutes(record.overtime_nocturnal_minutes) : '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Estado</dt><dd><StatusBadge status={record.status} /></dd></div>
           </dl>
         </div>
       </div>
 
       {record.is_manually_edited && record.edits && record.edits.length > 0 && (
-        <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Historial de ediciones</h3>
+        <div className="mt-6 rounded-xl bg-grafito p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-white">Historial de ediciones</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 text-xs uppercase text-gray-500">
+              <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
                   <th className="pb-2">Campo</th>
                   <th className="pb-2">Valor anterior</th>
@@ -99,12 +99,12 @@ export default function AttendanceDetailPage() {
                   <th className="pb-2">Fecha</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-white/5">
                 {record.edits.map((edit) => (
                   <tr key={edit.id}>
                     <td className="py-2">{edit.field_changed}</td>
-                    <td className="py-2"><code className="rounded bg-gray-100 px-1 text-xs">{edit.old_value}</code></td>
-                    <td className="py-2"><code className="rounded bg-gray-100 px-1 text-xs">{edit.new_value}</code></td>
+                    <td className="py-2"><code className="rounded bg-white/5 px-1 text-xs">{edit.old_value}</code></td>
+                    <td className="py-2"><code className="rounded bg-white/5 px-1 text-xs">{edit.new_value}</code></td>
                     <td className="py-2">{edit.reason}</td>
                     <td className="py-2">{edit.editor.name}</td>
                     <td className="py-2">{new Date(edit.created_at).toLocaleString()}</td>

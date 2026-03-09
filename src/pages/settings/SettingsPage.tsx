@@ -54,13 +54,13 @@ export default function SettingsPage() {
     }
   };
 
-  const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
+  const inputBase = 'w-full rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
 
   if (loading) return (
     <div>
       <div className="flex items-center gap-2">
-        <HiOutlineCog6Tooth className="h-6 w-6 text-indigo-600" />
-        <h2 className="text-2xl font-bold text-gray-900">Configuración del Sistema</h2>
+        <HiOutlineCog6Tooth className="h-6 w-6 text-radar" />
+        <h2 className="text-2xl font-bold text-white">Configuración del Sistema</h2>
       </div>
       <SkeletonForm fields={6} />
     </div>
@@ -70,26 +70,26 @@ export default function SettingsPage() {
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HiOutlineCog6Tooth className="h-6 w-6 text-indigo-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Configuración del Sistema</h2>
+          <HiOutlineCog6Tooth className="h-6 w-6 text-radar" />
+          <h2 className="text-2xl font-bold text-white">Configuración del Sistema</h2>
         </div>
         <TutorialModal steps={settingsSteps} />
       </div>
 
-      <div className="mt-6 max-w-3xl rounded-xl bg-white p-6 shadow-sm">
+      <div className="mt-6 max-w-3xl rounded-xl bg-grafito p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <fieldset>
-            <legend className="text-lg font-semibold text-gray-900">Asistencia</legend>
+            <legend className="text-lg font-semibold text-white">Asistencia</legend>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="noise_window_minutes" className="mb-1 block text-sm font-medium text-gray-700">Ventana de ruido (min)</label>
+                <label htmlFor="noise_window_minutes" className="mb-1 block text-sm font-medium text-gray-300">Ventana de ruido (min)</label>
                 <input id="noise_window_minutes" type="number" {...register('noise_window_minutes')} className={inputBase} />
                 <span className="mt-1 block text-xs text-gray-400">Filtra marcajes duplicados dentro de esta ventana</span>
                 {errors.noise_window_minutes && <span className="mt-1 block text-xs text-red-500">{errors.noise_window_minutes.message}</span>}
               </div>
 
               <div>
-                <label htmlFor="auto_assign_shift" className="mb-1 block text-sm font-medium text-gray-700">Auto-asignar turno</label>
+                <label htmlFor="auto_assign_shift" className="mb-1 block text-sm font-medium text-gray-300">Auto-asignar turno</label>
                 <select id="auto_assign_shift" {...register('auto_assign_shift')} className={inputBase}>
                   <option value="true">Habilitado</option>
                   <option value="false">Deshabilitado</option>
@@ -98,27 +98,27 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="auto_assign_tolerance_minutes" className="mb-1 block text-sm font-medium text-gray-700">Tolerancia auto-asignación (min)</label>
+                <label htmlFor="auto_assign_tolerance_minutes" className="mb-1 block text-sm font-medium text-gray-300">Tolerancia auto-asignación (min)</label>
                 <input id="auto_assign_tolerance_minutes" type="number" {...register('auto_assign_tolerance_minutes')} className={inputBase} />
                 <span className="mt-1 block text-xs text-gray-400">Ventana alrededor del inicio de turno para match</span>
                 {errors.auto_assign_tolerance_minutes && <span className="mt-1 block text-xs text-red-500">{errors.auto_assign_tolerance_minutes.message}</span>}
               </div>
 
               <div>
-                <label htmlFor="lunch_margin_minutes" className="mb-1 block text-sm font-medium text-gray-700">Margen almuerzo (min)</label>
+                <label htmlFor="lunch_margin_minutes" className="mb-1 block text-sm font-medium text-gray-300">Margen almuerzo (min)</label>
                 <input id="lunch_margin_minutes" type="number" {...register('lunch_margin_minutes')} className={inputBase} />
                 <span className="mt-1 block text-xs text-gray-400">Margen para detectar marcajes de almuerzo</span>
                 {errors.lunch_margin_minutes && <span className="mt-1 block text-xs text-red-500">{errors.lunch_margin_minutes.message}</span>}
               </div>
 
               <div>
-                <label htmlFor="diurnal_start_time" className="mb-1 block text-sm font-medium text-gray-700">Inicio período diurno</label>
+                <label htmlFor="diurnal_start_time" className="mb-1 block text-sm font-medium text-gray-300">Inicio período diurno</label>
                 <input id="diurnal_start_time" type="time" {...register('diurnal_start_time')} className={inputBase} />
                 {errors.diurnal_start_time && <span className="mt-1 block text-xs text-red-500">{errors.diurnal_start_time.message}</span>}
               </div>
 
               <div>
-                <label htmlFor="nocturnal_start_time" className="mb-1 block text-sm font-medium text-gray-700">Inicio período nocturno</label>
+                <label htmlFor="nocturnal_start_time" className="mb-1 block text-sm font-medium text-gray-300">Inicio período nocturno</label>
                 <input id="nocturnal_start_time" type="time" {...register('nocturnal_start_time')} className={inputBase} />
                 {errors.nocturnal_start_time && <span className="mt-1 block text-xs text-red-500">{errors.nocturnal_start_time.message}</span>}
               </div>
@@ -126,10 +126,10 @@ export default function SettingsPage() {
           </fieldset>
 
           <fieldset>
-            <legend className="text-lg font-semibold text-gray-900">General</legend>
+            <legend className="text-lg font-semibold text-white">General</legend>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="data_retention_months" className="mb-1 block text-sm font-medium text-gray-700">Retención de datos (meses)</label>
+                <label htmlFor="data_retention_months" className="mb-1 block text-sm font-medium text-gray-300">Retención de datos (meses)</label>
                 <input id="data_retention_months" type="number" {...register('data_retention_months')} className={inputBase} />
                 <span className="mt-1 block text-xs text-gray-400">Meses de retención de datos históricos</span>
                 {errors.data_retention_months && <span className="mt-1 block text-xs text-red-500">{errors.data_retention_months.message}</span>}
@@ -138,7 +138,7 @@ export default function SettingsPage() {
           </fieldset>
 
           <div className="pt-2">
-            <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 cursor-pointer" disabled={isSubmitting}>
+            <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark disabled:opacity-50 cursor-pointer" disabled={isSubmitting}>
               <HiOutlineCheckCircle className="h-4 w-4" />
               {isSubmitting ? 'Guardando...' : 'Guardar configuración'}
             </button>

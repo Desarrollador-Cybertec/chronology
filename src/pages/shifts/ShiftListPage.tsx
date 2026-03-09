@@ -47,13 +47,13 @@ export default function ShiftListPage() {
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HiOutlineClock className="h-6 w-6 text-indigo-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Turnos</h2>
+          <HiOutlineClock className="h-6 w-6 text-radar" />
+          <h2 className="text-2xl font-bold text-white">Turnos</h2>
         </div>
         <div className="flex items-center gap-2">
           <TutorialModal steps={isSuperadmin ? shiftListAdminSteps : shiftListSteps} />
           {isSuperadmin && (
-            <Link to="/shifts/create" className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+            <Link to="/shifts/create" className="flex items-center gap-1.5 rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark">
               <HiOutlinePlusCircle className="h-4 w-4" /> Nuevo turno
             </Link>
           )}
@@ -64,29 +64,33 @@ export default function ShiftListPage() {
         <SkeletonTable cols={7} rows={5} />
       ) : (
         <>
-          <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
+          <div className="mt-6 overflow-x-auto rounded-xl bg-grafito shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 text-xs uppercase text-gray-500">
+              <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Horario</th>
                   <th className="px-4 py-3">Tolerancia</th>
-                  <th className="px-4 py-3">Almuerzo</th>
+                  <th className="px-4 py-3">Descansos</th>
                   <th className="px-4 py-3">HE</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-white/5">
                 {data.map((shift) => (
-                  <tr key={shift.id} className="hover:bg-gray-50">
+                  <tr key={shift.id} className="hover:bg-grafito-lighter">
                     <td className="px-4 py-3 font-medium">{shift.name}</td>
                     <td className="px-4 py-3">
                       {shift.start_time} - {shift.end_time}
                       {shift.crosses_midnight && <span className="ml-1 text-gray-400">(nocturno)</span>}
                     </td>
                     <td className="px-4 py-3">{shift.tolerance_minutes} min</td>
-                    <td className="px-4 py-3">{shift.lunch_required ? `${shift.lunch_duration_minutes} min` : 'No'}</td>
+                    <td className="px-4 py-3">
+                      {shift.breaks && shift.breaks.length > 0
+                        ? `${shift.breaks.length} bloque${shift.breaks.length > 1 ? 's' : ''} (${shift.breaks.reduce((sum, b) => sum + b.duration_minutes, 0)} min)`
+                        : shift.lunch_required ? `${shift.lunch_duration_minutes ?? 0} min` : 'No'}
+                    </td>
                     <td className="px-4 py-3">{shift.overtime_enabled ? 'Sí' : 'No'}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${shift.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
@@ -97,7 +101,7 @@ export default function ShiftListPage() {
                       <div className="flex gap-2">
                         {isSuperadmin && (
                           <>
-                            <Link to={`/shifts/${shift.id}/edit`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlinePencilSquare className="h-4 w-4" /> Editar</Link>
+                            <Link to={`/shifts/${shift.id}/edit`} className="flex items-center gap-1 text-sm text-radar hover:underline"><HiOutlinePencilSquare className="h-4 w-4" /> Editar</Link>
                             <button className="flex items-center gap-1 text-sm text-red-600 hover:underline cursor-pointer" onClick={() => handleDelete(shift.id, shift.name)}><HiOutlineTrash className="h-4 w-4" /> Eliminar</button>
                           </>
                         )}

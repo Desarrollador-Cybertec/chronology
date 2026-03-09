@@ -11,6 +11,7 @@ import EmployeeDetailPage from '@/pages/employees/EmployeeDetailPage';
 import EmployeeEditPage from '@/pages/employees/EmployeeEditPage';
 import AssignShiftPage from '@/pages/employees/AssignShiftPage';
 import ShiftListPage from '@/pages/shifts/ShiftListPage';
+import ShiftAssignmentPage from '@/pages/shifts/ShiftAssignmentPage';
 import ShiftFormPage from '@/pages/shifts/ShiftFormPage';
 import ShiftEditPage from '@/pages/shifts/ShiftEditPage';
 import AttendanceListPage from '@/pages/attendance/AttendanceListPage';
@@ -24,7 +25,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Toaster position="top-right" options={{ fill: '#1a1a2e', roundness: 12 }} />
+        <Toaster position="top-right" options={{ fill: '#202020', roundness: 12 }} />
         <Routes>
           {/* Guest routes */}
           <Route element={<GuestRoute />}>
@@ -43,6 +44,7 @@ function App() {
 
               {/* Shifts */}
               <Route path="/shifts" element={<ShiftListPage />} />
+              <Route path="/shifts/assign" element={<ShiftAssignmentPage />} />
 
               {/* Attendance */}
               <Route path="/attendance" element={<AttendanceListPage />} />

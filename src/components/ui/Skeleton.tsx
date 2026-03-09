@@ -3,17 +3,17 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className = '' }: SkeletonProps) {
-  return <div className={`animate-pulse rounded-lg bg-gray-200 ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-white/10 ${className}`} />;
 }
 
 export function SkeletonText({ className = '' }: SkeletonProps) {
-  return <div className={`animate-pulse rounded bg-gray-200 h-4 ${className}`} />;
+  return <div className={`animate-pulse rounded bg-white/10 h-4 ${className}`} />;
 }
 
 /** Skeleton for a KPI card (icon + number + label) */
 export function SkeletonCard() {
   return (
-    <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
+    <div className="flex items-center gap-4 rounded-xl bg-grafito p-5 shadow-sm">
       <Skeleton className="h-11 w-11 shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-7 w-16" />
@@ -26,16 +26,16 @@ export function SkeletonCard() {
 /** Skeleton for a table with header + N rows */
 export function SkeletonTable({ cols = 5, rows = 5 }: { cols?: number; rows?: number }) {
   return (
-    <div className="mt-6 overflow-hidden rounded-xl bg-white shadow-sm">
+    <div className="mt-6 overflow-hidden rounded-xl bg-grafito shadow-sm">
       {/* Header */}
-      <div className="flex gap-4 border-b border-gray-200 px-4 py-3">
+      <div className="flex gap-4 border-b border-white/8 px-4 py-3">
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-3 flex-1" />
         ))}
       </div>
       {/* Rows */}
       {Array.from({ length: rows }).map((_, r) => (
-        <div key={r} className="flex gap-4 border-b border-gray-100 px-4 py-3.5">
+        <div key={r} className="flex gap-4 border-b border-white/5 px-4 py-3.5">
           {Array.from({ length: cols }).map((_, c) => (
             <SkeletonText key={c} className="flex-1" />
           ))}
@@ -48,7 +48,7 @@ export function SkeletonTable({ cols = 5, rows = 5 }: { cols?: number; rows?: nu
 /** Skeleton for a form with fieldsets */
 export function SkeletonForm({ fields = 4 }: { fields?: number }) {
   return (
-    <div className="mt-6 max-w-3xl rounded-xl bg-white p-6 shadow-sm">
+    <div className="mt-6 max-w-3xl rounded-xl bg-grafito p-6 shadow-sm">
       <Skeleton className="mb-6 h-5 w-32" />
       <div className="grid gap-4 sm:grid-cols-2">
         {Array.from({ length: fields }).map((_, i) => (
@@ -66,9 +66,9 @@ export function SkeletonForm({ fields = 4 }: { fields?: number }) {
 /** Skeleton for a detail page with key-value rows */
 export function SkeletonDetail({ rows = 6 }: { rows?: number }) {
   return (
-    <div className="mt-6 max-w-3xl rounded-xl bg-white p-6 shadow-sm">
+    <div className="mt-6 max-w-3xl rounded-xl bg-grafito p-6 shadow-sm">
       <Skeleton className="mb-4 h-6 w-48" />
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-white/5">
         {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="flex items-center py-3">
             <Skeleton className="h-4 w-32 shrink-0" />

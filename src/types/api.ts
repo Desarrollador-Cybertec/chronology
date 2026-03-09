@@ -40,6 +40,18 @@ export interface PaginatedResponse<T> {
 }
 
 // ── Employees ──
+export interface AttendanceSummary {
+  total_days_worked: number;
+  total_days_absent: number;
+  total_days_incomplete: number;
+  total_worked_minutes: number;
+  total_overtime_minutes: number;
+  total_overtime_diurnal_minutes: number;
+  total_overtime_nocturnal_minutes: number;
+  total_late_minutes: number;
+  total_early_departure_minutes: number;
+}
+
 export interface Employee {
   id: number;
   internal_id: string;
@@ -49,9 +61,20 @@ export interface Employee {
   position: string | null;
   is_active: boolean;
   shift_assignments: ShiftAssignment[];
+  attendance_summary?: AttendanceSummary;
 }
 
 // ── Shifts ──
+export interface ShiftBreak {
+  id: number;
+  shift_id: number;
+  type: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  position: number;
+}
+
 export interface Shift {
   id: number;
   name: string;
@@ -61,12 +84,13 @@ export interface Shift {
   lunch_required: boolean;
   lunch_start_time: string | null;
   lunch_end_time: string | null;
-  lunch_duration_minutes: number;
+  lunch_duration_minutes: number | null;
   tolerance_minutes: number;
   overtime_enabled: boolean;
-  overtime_min_block_minutes: number;
-  max_daily_overtime_minutes: number;
+  overtime_min_block_minutes: number | null;
+  max_daily_overtime_minutes: number | null;
   is_active: boolean;
+  breaks: ShiftBreak[];
 }
 
 // ── Shift Assignments ──

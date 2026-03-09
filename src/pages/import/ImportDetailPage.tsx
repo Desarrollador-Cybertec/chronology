@@ -22,17 +22,17 @@ export default function ImportDetailPage() {
   }, [id]);
 
   if (loading) return <SkeletonDetail rows={6} />;
-  if (!batch) return <p className="text-gray-500">Importación no encontrada.</p>;
+  if (!batch) return <p className="text-gray-400">Importación no encontrada.</p>;
 
   return (
     <div>
-      <Link to="/import" className="text-sm text-indigo-600 hover:underline">← Importaciones</Link>
+      <Link to="/import" className="text-sm text-radar hover:underline">← Importaciones</Link>
       <div className="mt-1 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Importación #{batch.id}</h2>
+        <h2 className="text-2xl font-bold text-white">Importación #{batch.id}</h2>
         <TutorialModal steps={importDetailSteps} />
       </div>
 
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-xl bg-grafito p-6 shadow-sm">
         <dl className="grid gap-4 sm:grid-cols-2">
           {[
             ['Archivo', batch.original_filename],
@@ -40,24 +40,24 @@ export default function ImportDetailPage() {
             ['Procesadas', batch.processed_rows],
             ['Procesado', batch.processed_at ? new Date(batch.processed_at).toLocaleString() : 'Pendiente'],
           ].map(([label, value]) => (
-            <div key={label as string} className="flex justify-between border-b border-gray-100 pb-2">
-              <dt className="text-sm text-gray-500">{label}</dt>
-              <dd className="text-sm font-medium text-gray-900">{value}</dd>
+            <div key={label as string} className="flex justify-between border-b border-white/5 pb-2">
+              <dt className="text-sm text-gray-400">{label}</dt>
+              <dd className="text-sm font-medium text-white">{value}</dd>
             </div>
           ))}
-          <div className="flex justify-between border-b border-gray-100 pb-2">
-            <dt className="text-sm text-gray-500">Estado</dt>
+          <div className="flex justify-between border-b border-white/5 pb-2">
+            <dt className="text-sm text-gray-400">Estado</dt>
             <dd><StatusBadge status={batch.status} /></dd>
           </div>
-          <div className="flex justify-between border-b border-gray-100 pb-2">
-            <dt className="text-sm text-gray-500">Fallidas</dt>
-            <dd className={`text-sm font-medium ${batch.failed_rows > 0 ? 'text-red-600' : 'text-gray-900'}`}>{batch.failed_rows}</dd>
+          <div className="flex justify-between border-b border-white/5 pb-2">
+            <dt className="text-sm text-gray-400">Fallidas</dt>
+            <dd className={`text-sm font-medium ${batch.failed_rows > 0 ? 'text-red-600' : 'text-white'}`}>{batch.failed_rows}</dd>
           </div>
         </dl>
 
         {batch.errors && batch.errors.length > 0 && (
           <div className="mt-6">
-            <h4 className="text-sm font-semibold text-gray-900">Errores</h4>
+            <h4 className="text-sm font-semibold text-white">Errores</h4>
             <ul className="mt-2 space-y-1">
               {batch.errors.map((e, i) => (
                 <li key={i} className="text-sm text-red-600">• {e}</li>

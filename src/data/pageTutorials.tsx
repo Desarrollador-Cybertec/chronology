@@ -125,7 +125,45 @@ export const assignShiftSteps = [
   },
   {
     title: 'Días laborables',
-    description: 'Selecciona los días de la semana con los botones Lun-Dom. Por defecto están marcados Lun a Vie. Haz clic para activar/desactivar cada día. Se resaltan en indigo los días seleccionados.',
+    description: 'Selecciona los días de la semana con los botones Lun-Dom. Por defecto están marcados Lun a Vie. Haz clic para activar/desactivar cada día. Se resaltan en azul los días seleccionados.',
+    icon: icon(HiOutlineUserPlus),
+  },
+];
+
+/* ── Asignación masiva de turnos ── */
+export const shiftAssignmentPageSteps = [
+  {
+    title: 'Vista general',
+    description: 'Esta pantalla muestra todos los empleados con su turno actual asignado, vigencia y estado. Permite ver de un vistazo quién tiene turno y quién no.',
+    icon: icon(HiOutlineUsers),
+  },
+  {
+    title: 'Turno actual',
+    description: 'La columna "Turno actual" indica el turno vigente de cada empleado con su horario. Si aparece "Sin turno" en amarillo, significa que el empleado aún no tiene turno asignado.',
+    icon: icon(HiOutlineClock),
+  },
+  {
+    title: 'Paginación',
+    description: 'Navega entre páginas con los botones al pie de la tabla. Las selecciones se mantienen aunque cambies de página.',
+    icon: icon(HiOutlineMagnifyingGlass),
+  },
+];
+
+export const shiftAssignmentPageAdminSteps = [
+  ...shiftAssignmentPageSteps,
+  {
+    title: 'Seleccionar empleados',
+    description: 'Marca la casilla de cada empleado al que quieras asignar un turno. Usa la casilla del encabezado para seleccionar/deseleccionar todos los empleados activos de la página actual.',
+    icon: icon(HiOutlineCheckBadge),
+  },
+  {
+    title: 'Formulario de asignación',
+    description: 'Elige el turno, fecha de inicio, fecha fin (opcional) y días laborables. El botón indica cuántos empleados recibirán la asignación.',
+    icon: icon(HiOutlineAdjustmentsHorizontal),
+  },
+  {
+    title: 'Asignación masiva',
+    description: 'Al confirmar, el turno se asigna a todos los empleados seleccionados. Puedes seleccionar empleados de diferentes páginas antes de asignar.',
     icon: icon(HiOutlineUserPlus),
   },
 ];

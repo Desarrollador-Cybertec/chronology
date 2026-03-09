@@ -6,8 +6,8 @@ interface Props {
 }
 
 const base = 'inline-flex h-8 min-w-8 items-center justify-center rounded border text-sm transition-colors cursor-pointer';
-const normal = `${base} border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed`;
-const active = `${base} border-indigo-500 bg-indigo-500 text-white`;
+const normal = `${base} border-white/10 bg-grafito text-gray-300 hover:bg-grafito-lighter disabled:opacity-40 disabled:cursor-not-allowed`;
+const active = `${base} border-radar bg-radar text-white`;
 
 export default function Pagination({ meta, onPageChange }: Props) {
   if (meta.last_page <= 1) return null;
@@ -42,7 +42,7 @@ export default function Pagination({ meta, onPageChange }: Props) {
 
       <button className={normal} disabled={meta.current_page === meta.last_page} onClick={() => onPageChange(meta.current_page + 1)}>→</button>
 
-      <span className="ml-3 text-sm text-gray-500">{meta.total} resultados</span>
+      <span className="ml-3 text-sm text-gray-400">{meta.total} resultados</span>
     </div>
   );
 }

@@ -117,7 +117,7 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">¡Hola, {user?.name}!</h2>
+        <h2 className="text-2xl font-bold text-white">¡Hola, {user?.name}!</h2>
         <TutorialModal
           steps={isSuperadmin ? adminSteps : managerSteps}
           buttonLabel={isSuperadmin ? 'Tutorial Admin' : 'Tutorial'}
@@ -126,57 +126,57 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+        <div className="flex items-center gap-4 rounded-xl bg-grafito p-5 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-radar/10 text-radar">
             <HiOutlineUsers className="h-6 w-6" />
           </div>
           <div>
-            <span className="block text-2xl font-bold text-gray-900">{totalEmployees}</span>
-            <span className="text-sm text-gray-500">Empleados</span>
+            <span className="block text-2xl font-bold text-white">{totalEmployees}</span>
+            <span className="text-sm text-gray-400">Empleados</span>
           </div>
         </div>
-        <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-4 rounded-xl bg-grafito p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-50 text-red-600">
             <HiOutlineExclamationTriangle className="h-6 w-6" />
           </div>
           <div>
             <span className="block text-2xl font-bold text-red-600">{lateOffenders.length}</span>
-            <span className="text-sm text-gray-500">Reincidentes</span>
+            <span className="text-sm text-gray-400">Reincidentes</span>
           </div>
         </div>
-        <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-4 rounded-xl bg-grafito p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
             <HiOutlineClock className="h-6 w-6" />
           </div>
           <div>
-            <span className="block text-2xl font-bold text-gray-900">{totalLateRecords}</span>
-            <span className="text-sm text-gray-500">Total tardanzas</span>
+            <span className="block text-2xl font-bold text-white">{totalLateRecords}</span>
+            <span className="text-sm text-gray-400">Total tardanzas</span>
           </div>
         </div>
-        <div className="flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-4 rounded-xl bg-grafito p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
             <HiOutlineArrowUpTray className="h-6 w-6" />
           </div>
           <div>
-            <span className="block text-2xl font-bold text-gray-900">{recentImport ? <StatusBadge status={recentImport.status} /> : '—'}</span>
-            <span className="text-sm text-gray-500">Última importación</span>
+            <span className="block text-2xl font-bold text-white">{recentImport ? <StatusBadge status={recentImport.status} /> : '—'}</span>
+            <span className="text-sm text-gray-400">Última importación</span>
           </div>
         </div>
       </div>
 
       {/* Quick CSV Upload */}
-      <div className="mt-6 rounded-xl bg-white p-5 shadow-sm">
+      <div className="mt-6 rounded-xl bg-grafito p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <HiOutlineArrowUpTray className="h-5 w-5 text-indigo-600" />
-            <h3 className="text-sm font-semibold text-gray-900">Importar CSV rápido</h3>
+            <HiOutlineArrowUpTray className="h-5 w-5 text-radar" />
+            <h3 className="text-sm font-semibold text-white">Importar CSV rápido</h3>
           </div>
-          <Link to="/import" className="flex items-center gap-1 text-sm text-indigo-600 hover:underline">
+          <Link to="/import" className="flex items-center gap-1 text-sm text-radar hover:underline">
             Historial <HiOutlineArrowTopRightOnSquare className="h-3.5 w-3.5" />
           </Link>
         </div>
         <FileDropZone onFileSelected={handleUpload} disabled={uploading} compact />
-        {uploading && <p className="mt-2 text-xs text-indigo-600 animate-pulse">Subiendo archivo...</p>}
+        {uploading && <p className="mt-2 text-xs text-radar animate-pulse">Subiendo archivo...</p>}
         {processingBatch && (
           <div className="mt-3">
             <ProcessingIndicator
@@ -188,13 +188,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Repeat Late Offenders */}
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-xl bg-grafito p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <HiOutlineArrowPath className="h-5 w-5 text-red-400" />
-            <h3 className="text-lg font-semibold text-gray-900">Reincidentes de tardanza</h3>
+            <h3 className="text-lg font-semibold text-white">Reincidentes de tardanza</h3>
           </div>
-          <Link to="/attendance?has_late=1" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline">
+          <Link to="/attendance?has_late=1" className="flex items-center gap-1 text-sm font-medium text-radar hover:underline">
             Ver todo <HiOutlineArrowTopRightOnSquare className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -204,7 +204,7 @@ export default function DashboardPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 text-xs uppercase text-gray-500">
+              <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
                   <th className="pb-2">Empleado</th>
                   <th className="pb-2 text-center">Veces tarde</th>
@@ -214,18 +214,18 @@ export default function DashboardPage() {
                   <th className="pb-2"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-white/5">
                 {lateOffenders.map((o) => (
                   <tr key={o.employeeId}>
-                    <td className="py-2 font-medium text-gray-900">{o.name}</td>
+                    <td className="py-2 font-medium text-white">{o.name}</td>
                     <td className="py-2 text-center">
                       <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">{o.count}</span>
                     </td>
                     <td className="py-2 text-right text-red-600 font-medium">{o.totalMinutes} min</td>
-                    <td className="py-2 text-right text-gray-600">{o.avgMinutes} min</td>
-                    <td className="py-2 text-gray-500">{o.lastDate}</td>
+                    <td className="py-2 text-right text-gray-400">{o.avgMinutes} min</td>
+                    <td className="py-2 text-gray-400">{o.lastDate}</td>
                     <td className="py-2">
-                      <Link to={`/employees/${o.employeeId}`} className="text-indigo-600 hover:underline text-xs">Ver perfil</Link>
+                      <Link to={`/employees/${o.employeeId}`} className="text-radar hover:underline text-xs">Ver perfil</Link>
                     </td>
                   </tr>
                 ))}

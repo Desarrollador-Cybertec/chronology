@@ -80,19 +80,19 @@ export default function ImportPage() {
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HiOutlineArrowUpTray className="h-6 w-6 text-indigo-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Importar CSV</h2>
+          <HiOutlineArrowUpTray className="h-6 w-6 text-radar" />
+          <h2 className="text-2xl font-bold text-white">Importar CSV</h2>
         </div>
         <TutorialModal steps={isSuperadmin ? importPageAdminSteps : importPageSteps} />
       </div>
 
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900">Subir archivo del biométrico</h3>
-        <p className="mt-1 mb-4 text-sm text-gray-500">
+      <div className="mt-6 rounded-xl bg-grafito p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-white">Subir archivo del biométrico</h3>
+        <p className="mt-1 mb-4 text-sm text-gray-400">
           Archivo CSV con columnas: ID de persona, Hora. Máximo 10 MB.
         </p>
         <FileDropZone onFileSelected={handleUpload} disabled={uploading} />
-        {uploading && <p className="mt-3 text-center text-sm text-indigo-600 animate-pulse">Subiendo archivo...</p>}
+        {uploading && <p className="mt-3 text-center text-sm text-radar animate-pulse">Subiendo archivo...</p>}
         {processingBatch && (
           <div className="mt-4">
             <ProcessingIndicator
@@ -104,16 +104,16 @@ export default function ImportPage() {
       </div>
 
       <div className="mt-8">
-        <h3 className="text-lg font-semibold text-gray-900">Historial de importaciones</h3>
+        <h3 className="text-lg font-semibold text-white">Historial de importaciones</h3>
 
         {loading ? (
           <SkeletonTable cols={7} rows={4} />
         ) : (
           <>
-            <div className="mt-4 overflow-x-auto rounded-xl bg-white shadow-sm">
+            <div className="mt-4 overflow-x-auto rounded-xl bg-grafito shadow-sm">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
+                  <tr className="border-b border-white/8 text-xs uppercase text-gray-400">
                     <th className="px-4 py-3">#</th>
                     <th className="px-4 py-3">Archivo</th>
                     <th className="px-4 py-3">Filas</th>
@@ -123,9 +123,9 @@ export default function ImportPage() {
                     <th className="px-4 py-3">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-white/5">
                   {batches.map((b) => (
-                    <tr key={b.id} className="hover:bg-gray-50">
+                    <tr key={b.id} className="hover:bg-grafito-lighter">
                       <td className="px-4 py-3">{b.id}</td>
                       <td className="px-4 py-3">{b.original_filename}</td>
                       <td className="px-4 py-3">{b.total_rows}</td>
@@ -133,9 +133,9 @@ export default function ImportPage() {
                       <td className={`px-4 py-3 ${b.failed_rows > 0 ? 'text-red-600 font-medium' : ''}`}>{b.failed_rows}</td>
                       <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
                       <td className="flex gap-2 px-4 py-3">
-                        <Link to={`/import/${b.id}`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlineEye className="h-4 w-4" /> Ver</Link>
+                        <Link to={`/import/${b.id}`} className="flex items-center gap-1 text-sm text-radar hover:underline"><HiOutlineEye className="h-4 w-4" /> Ver</Link>
                         {isSuperadmin && b.status === 'completed' && (
-                          <button className="flex items-center gap-1 text-sm text-indigo-600 hover:underline cursor-pointer" onClick={() => handleReprocess(b.id)}>
+                          <button className="flex items-center gap-1 text-sm text-radar hover:underline cursor-pointer" onClick={() => handleReprocess(b.id)}>
                             <HiOutlineArrowPath className="h-4 w-4" /> Reprocesar
                           </button>
                         )}

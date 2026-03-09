@@ -9,12 +9,14 @@ import {
   HiOutlineArrowUpTray,
   HiOutlineCog6Tooth,
   HiOutlineArrowRightOnRectangle,
+  HiOutlineUserGroup,
 } from 'react-icons/hi2';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: HiOutlineHome, end: true },
   { to: '/employees', label: 'Empleados', icon: HiOutlineUsers },
   { to: '/shifts', label: 'Turnos', icon: HiOutlineClock },
+  { to: '/shifts/assign', label: 'Asignar turnos', icon: HiOutlineUserGroup },
   { to: '/attendance', label: 'Asistencia', icon: HiOutlineClipboardDocumentCheck },
   { to: '/import', label: 'Importar CSV', icon: HiOutlineArrowUpTray },
 ];
@@ -32,16 +34,16 @@ export default function AppLayout() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-5 py-2.5 text-sm font-medium border-l-[3px] transition-colors ${
       isActive
-        ? 'border-indigo-400 bg-indigo-500/10 text-indigo-400'
+        ? 'border-radar bg-radar/10 text-radar'
         : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white'
     }`;
 
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-[#1a1a2e] text-gray-300">
-        <div className="border-b border-white/8 px-5 py-5">
-          <h1 className="text-lg font-bold tracking-tight text-white">Chronology</h1>
+      <aside className="fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-grafito text-gray-300">
+        <div className="border-b border-white/8 px-4 py-5">
+          <img src="/logonav.svg" alt="Chronology" className="w-full" />
         </div>
 
         <nav className="flex flex-1 flex-col gap-0.5 py-4">
@@ -62,7 +64,7 @@ export default function AppLayout() {
         <div className="border-t border-white/8 px-5 py-4">
           <div className="mb-2">
             <p className="text-sm font-semibold text-white">{user?.name}</p>
-            <p className="text-xs capitalize text-gray-500">{user?.role}</p>
+            <p className="text-xs capitalize text-gray-400">{user?.role}</p>
           </div>
           <button
             onClick={handleLogout}
@@ -75,8 +77,11 @@ export default function AppLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="ml-60 flex-1 bg-gray-50 p-8">
-        <Outlet />
+      <main className="ml-60 flex-1 bg-navy p-8 relative">
+        <div className="pointer-events-none fixed inset-0 ml-60 bg-[url('/web.svg')] bg-cover bg-center bg-no-repeat" />
+        <div className="relative">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

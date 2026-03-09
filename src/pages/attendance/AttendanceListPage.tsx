@@ -16,7 +16,7 @@ import { SkeletonTable } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { attendanceListSteps, attendanceListAdminSteps } from '@/data/pageTutorials';
 
-const inputBase = 'rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
+const inputBase = 'rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
 
 function formatMinutes(min: number): string {
   const h = Math.floor(min / 60);
@@ -69,8 +69,8 @@ export default function AttendanceListPage() {
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HiOutlineClipboardDocumentCheck className="h-6 w-6 text-indigo-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Asistencia</h2>
+          <HiOutlineClipboardDocumentCheck className="h-6 w-6 text-radar" />
+          <h2 className="text-2xl font-bold text-white">Asistencia</h2>
         </div>
         <TutorialModal steps={isSuperadmin ? attendanceListAdminSteps : attendanceListSteps} />
       </div>
@@ -87,16 +87,16 @@ export default function AttendanceListPage() {
           <option value="rest">Descanso</option>
           <option value="holiday">Feriado</option>
         </select>
-        <button className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 cursor-pointer" onClick={applyFilters}><HiOutlineFunnel className="h-4 w-4" /> Filtrar</button>
+        <button className="flex items-center gap-1.5 rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark cursor-pointer" onClick={applyFilters}><HiOutlineFunnel className="h-4 w-4" /> Filtrar</button>
       </div>
 
       {loading ? (
         <SkeletonTable cols={10} rows={5} />
       ) : (
         <>
-          <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
+          <div className="mt-6 overflow-x-auto rounded-xl bg-grafito shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 text-xs uppercase text-gray-500">
+              <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
                   <th className="px-4 py-3">Fecha</th>
                   <th className="px-4 py-3">Empleado</th>
@@ -110,12 +110,12 @@ export default function AttendanceListPage() {
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-white/5">
                 {data.map((rec) => (
-                  <tr key={rec.id} className="hover:bg-gray-50">
+                  <tr key={rec.id} className="hover:bg-grafito-lighter">
                     <td className="px-4 py-3">{rec.date_reference}</td>
                     <td className="px-4 py-3">
-                      <Link to={`/employees/${rec.employee_id}`} className="font-medium text-indigo-600 hover:underline">
+                      <Link to={`/employees/${rec.employee_id}`} className="font-medium text-radar hover:underline">
                         {rec.employee.first_name} {rec.employee.last_name}
                       </Link>
                     </td>
@@ -135,9 +135,9 @@ export default function AttendanceListPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Link to={`/attendance/${rec.id}`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlineEye className="h-4 w-4" /> Ver</Link>
+                        <Link to={`/attendance/${rec.id}`} className="flex items-center gap-1 text-sm text-radar hover:underline"><HiOutlineEye className="h-4 w-4" /> Ver</Link>
                         {isSuperadmin && (
-                          <Link to={`/attendance/${rec.id}/edit`} className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"><HiOutlinePencilSquare className="h-4 w-4" /> Editar</Link>
+                          <Link to={`/attendance/${rec.id}/edit`} className="flex items-center gap-1 text-sm text-radar hover:underline"><HiOutlinePencilSquare className="h-4 w-4" /> Editar</Link>
                         )}
                       </div>
                     </td>

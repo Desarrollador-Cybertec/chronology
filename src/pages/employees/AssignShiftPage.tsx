@@ -10,7 +10,7 @@ import type { Shift } from '@/types/api';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { assignShiftSteps } from '@/data/pageTutorials';
 
-const inputBase = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500';
+const inputBase = 'w-full rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
 
 const DAY_OPTIONS = [
   { value: 1, label: 'Lunes' },
@@ -68,18 +68,18 @@ export default function AssignShiftPage() {
 
   return (
     <div>
-      <Link to={`/employees/${employeeId}`} className="text-sm text-indigo-600 hover:underline">← Volver</Link>
+      <Link to={`/employees/${employeeId}`} className="text-sm text-radar hover:underline">← Volver</Link>
       <div className="mt-1 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Asignar turno</h2>
+        <h2 className="text-2xl font-bold text-white">Asignar turno</h2>
         <TutorialModal steps={assignShiftSteps} />
       </div>
 
-      <div className="mt-6 max-w-2xl rounded-xl bg-white p-6 shadow-sm">
+      <div className="mt-6 max-w-2xl rounded-xl bg-grafito p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
           <input type="hidden" {...register('employee_id')} />
 
           <div>
-            <label htmlFor="shift_id" className="mb-1 block text-sm font-medium text-gray-700">Turno</label>
+            <label htmlFor="shift_id" className="mb-1 block text-sm font-medium text-gray-300">Turno</label>
             <select id="shift_id" {...register('shift_id')} className={`${inputBase} ${errors.shift_id ? 'border-red-400' : ''}`}>
               <option value="">Seleccionar turno...</option>
               {shifts.map((s) => (
@@ -90,18 +90,18 @@ export default function AssignShiftPage() {
           </div>
 
           <div>
-            <label htmlFor="effective_date" className="mb-1 block text-sm font-medium text-gray-700">Fecha de inicio</label>
+            <label htmlFor="effective_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha de inicio</label>
             <input id="effective_date" type="date" {...register('effective_date')} className={`${inputBase} ${errors.effective_date ? 'border-red-400' : ''}`} />
             {errors.effective_date && <span className="mt-1 block text-xs text-red-500">{errors.effective_date.message}</span>}
           </div>
 
           <div>
-            <label htmlFor="end_date" className="mb-1 block text-sm font-medium text-gray-700">Fecha fin (opcional)</label>
+            <label htmlFor="end_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha fin (opcional)</label>
             <input id="end_date" type="date" {...register('end_date')} className={inputBase} />
           </div>
 
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">Días laborables</label>
+            <label className="mb-1 block text-sm font-medium text-gray-300">Días laborables</label>
             <div className="flex flex-wrap gap-2">
               {DAY_OPTIONS.map((d) => (
                 <button
@@ -109,8 +109,8 @@ export default function AssignShiftPage() {
                   type="button"
                   className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition cursor-pointer ${
                     workDays?.includes(d.value)
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'border-radar bg-radar/10 text-radar-dark'
+                      : 'border-white/10 text-gray-400 hover:bg-grafito-lighter'
                   }`}
                   onClick={() => toggleDay(d.value)}
                 >
@@ -122,10 +122,10 @@ export default function AssignShiftPage() {
           </div>
 
           <div className="flex gap-3 pt-2 sm:col-span-2">
-            <button type="submit" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 cursor-pointer" disabled={isSubmitting}>
+            <button type="submit" className="rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark disabled:opacity-50 cursor-pointer" disabled={isSubmitting}>
               {isSubmitting ? 'Asignando...' : 'Asignar turno'}
             </button>
-            <Link to={`/employees/${employeeId}`} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</Link>
+            <Link to={`/employees/${employeeId}`} className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-grafito-lighter">Cancelar</Link>
           </div>
         </form>
       </div>

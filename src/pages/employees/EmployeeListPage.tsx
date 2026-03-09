@@ -11,6 +11,7 @@ import {
   HiOutlineEye,
   HiOutlinePencilSquare,
   HiOutlinePower,
+  HiOutlineMagnifyingGlass,
 } from "react-icons/hi2";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import TutorialModal from "@/components/ui/TutorialModal";
@@ -22,12 +23,23 @@ export default function EmployeeListPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [page, _setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [searchDebounced, setSearchDebounced] = useState('');
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchDebounced(search);
+      _setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setLoading(true);
     employees
-      .list(page)
+      .list(page, searchDebounced || undefined)
       .then((res) => {
         setData(res.data);
         setMeta(res.meta);
@@ -36,7 +48,7 @@ export default function EmployeeListPage() {
         sileo.error({ title: "Error al cargar empleados" });
       })
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, searchDebounced]);
 
   const handleToggle = async (id: number) => {
     try {
@@ -56,19 +68,32 @@ export default function EmployeeListPage() {
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HiOutlineUsers className="h-6 w-6 text-indigo-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Empleados</h2>
+          <HiOutlineUsers className="h-6 w-6 text-radar" />
+          <h2 className="text-2xl font-bold text-white">Empleados</h2>
         </div>
         <TutorialModal steps={isSuperadmin ? employeeListAdminSteps : employeeListSteps} />
+      </div>
+
+      <div className="mt-4">
+        <div className="relative max-w-sm">
+          <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre, ID o departamento..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-white/10 bg-grafito-light py-2 pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-gray-500 focus:ring-2 focus:ring-radar"
+          />
+        </div>
       </div>
 
       {loading ? (
         <SkeletonTable cols={6} rows={5} />
       ) : (
         <>
-          <div className="mt-6 overflow-x-auto rounded-xl bg-white shadow-sm">
+          <div className="mt-6 overflow-x-auto rounded-xl bg-grafito shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-gray-200 text-xs uppercase text-gray-500">
+              <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
                   <th className="px-4 py-3">ID Interno</th>
                   <th className="px-4 py-3">Nombre</th>
@@ -78,14 +103,14 @@ export default function EmployeeListPage() {
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-white/5">
                 {data.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-gray-50">
+                  <tr key={emp.id} className="hover:bg-grafito-lighter">
                     <td className="px-4 py-3">{emp.internal_id}</td>
                     <td className="px-4 py-3">
                       <Link
                         to={`/employees/${emp.id}`}
-                        className="font-medium text-indigo-600 hover:underline"
+                        className="font-medium text-radar hover:underline"
                       >
                         {emp.first_name} {emp.last_name}
                       </Link>
@@ -103,7 +128,7 @@ export default function EmployeeListPage() {
                       <div className="flex gap-2">
                         <Link
                           to={`/employees/${emp.id}`}
-                          className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"
+                          className="flex items-center gap-1 text-sm text-radar hover:underline"
                         >
                           <HiOutlineEye className="h-4 w-4" /> Ver
                         </Link>
@@ -111,12 +136,12 @@ export default function EmployeeListPage() {
                           <>
                             <Link
                               to={`/employees/${emp.id}/edit`}
-                              className="flex items-center gap-1 text-sm text-indigo-600 hover:underline"
+                              className="flex items-center gap-1 text-sm text-radar hover:underline"
                             >
                               <HiOutlinePencilSquare className="h-4 w-4" /> Editar
                             </Link>
                             <button
-                              className="flex items-center gap-1 text-sm text-indigo-600 hover:underline cursor-pointer"
+                              className="flex items-center gap-1 text-sm text-radar hover:underline cursor-pointer"
                               onClick={() => handleToggle(emp.id)}
                             >
                               <HiOutlinePower className="h-4 w-4" />

@@ -48,7 +48,7 @@ export default function ProcessingIndicator({ batch: initial, onComplete }: Proc
         ? batch.status === 'completed'
           ? 'border-emerald-200 bg-emerald-50'
           : 'border-red-200 bg-red-50'
-        : 'border-indigo-200 bg-indigo-50'
+        : 'border-radar/30 bg-radar/10'
     }`}>
       <div className="flex items-start gap-4">
         {/* Icon / Spinner */}
@@ -63,7 +63,7 @@ export default function ProcessingIndicator({ batch: initial, onComplete }: Proc
             <div className="relative flex h-8 w-8 items-center justify-center">
               <svg className="h-8 w-8 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                <path className="text-indigo-600" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <path className="text-radar" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             </div>
           )}
@@ -72,29 +72,29 @@ export default function ProcessingIndicator({ batch: initial, onComplete }: Proc
         {/* Content */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <HiOutlineDocumentText className="h-4 w-4 text-gray-500" />
-            <span className="truncate text-sm font-medium text-gray-900">{batch.original_filename}</span>
+            <HiOutlineDocumentText className="h-4 w-4 text-gray-400" />
+            <span className="truncate text-sm font-medium text-white">{batch.original_filename}</span>
             <StatusBadge status={batch.status} />
           </div>
 
           {/* Progress bar */}
           {!finished && (
             <div className="mt-3">
-              <div className="flex justify-between text-xs text-gray-600">
+              <div className="flex justify-between text-xs text-gray-400">
                 <span>
                   {batch.status === 'pending' ? 'En cola de procesamiento…' : `Procesando filas…`}
                 </span>
                 <span>{batch.processed_rows} / {batch.total_rows}</span>
               </div>
-              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-indigo-100">
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-radar/20">
                 <div
-                  className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+                  className="h-full rounded-full bg-radar transition-all duration-500"
                   style={{ width: `${Math.max(progress, batch.status === 'pending' ? 0 : 5)}%` }}
                 />
               </div>
               <div className="mt-2 flex items-center gap-2">
-                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
-                <span className="text-xs text-indigo-700 animate-pulse">
+                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-radar" />
+                <span className="text-xs text-radar animate-pulse">
                   {batch.status === 'pending' ? 'Esperando turno en la cola…' : 'Procesando registros de asistencia…'}
                 </span>
               </div>

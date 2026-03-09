@@ -59,12 +59,12 @@ export default function FileDropZone({ onFileSelected, accept = '.csv,.txt', dis
         onClick={() => !disabled && inputRef.current?.click()}
         className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed px-4 py-3 transition ${
           dragging
-            ? 'border-indigo-500 bg-indigo-50'
-            : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
+            ? 'border-radar bg-radar/10'
+            : 'border-white/10 hover:border-radar hover:bg-grafito-lighter'
         } ${disabled ? 'pointer-events-none opacity-50' : ''}`}
       >
-        <HiOutlineArrowUpTray className={`h-5 w-5 shrink-0 ${dragging ? 'text-indigo-600' : 'text-gray-400'}`} />
-        <span className="text-sm text-gray-500">
+        <HiOutlineArrowUpTray className={`h-5 w-5 shrink-0 ${dragging ? 'text-radar' : 'text-gray-400'}`} />
+        <span className="text-sm text-gray-400">
           {dragging ? 'Suelta el archivo aquí' : 'Arrastra un CSV o haz clic para seleccionar'}
         </span>
         <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={handleChange} />
@@ -81,12 +81,12 @@ export default function FileDropZone({ onFileSelected, accept = '.csv,.txt', dis
       onClick={() => !disabled && inputRef.current?.click()}
       className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition ${
         dragging
-          ? 'border-indigo-500 bg-indigo-50'
-          : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
+          ? 'border-radar bg-radar/10'
+          : 'border-white/10 hover:border-radar hover:bg-grafito-lighter'
       } ${disabled ? 'pointer-events-none opacity-50' : ''}`}
     >
-      <HiOutlineArrowUpTray className={`h-10 w-10 ${dragging ? 'text-indigo-600' : 'text-gray-400'}`} />
-      <p className="mt-3 text-sm font-medium text-gray-700">
+      <HiOutlineArrowUpTray className={`h-10 w-10 ${dragging ? 'text-radar' : 'text-gray-400'}`} />
+      <p className="mt-3 text-sm font-medium text-gray-300">
         {dragging ? 'Suelta el archivo aquí' : 'Arrastra tu archivo CSV aquí'}
       </p>
       <p className="mt-1 text-xs text-gray-400">o haz clic para seleccionar · Máx 10 MB</p>

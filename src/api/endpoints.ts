@@ -5,6 +5,7 @@ import type {
     RegisterResponse,
     Employee,
     Shift,
+    ShiftBreak,
     ShiftAssignment,
     ScheduleException,
     AttendanceRecord,
@@ -25,8 +26,11 @@ export const auth = {
 
 // ── Employees ──
 export const employees = {
-    list: (page = 1) =>
-        api.get<PaginatedResponse<Employee>>(`/employees?page=${page}`),
+    list: (page = 1, search?: string) => {
+        const query = new URLSearchParams({ page: String(page) });
+        if (search) query.set('search', search);
+        return api.get<PaginatedResponse<Employee>>(`/employees?${query.toString()}`);
+    },
     get: (id: number) =>
         api.get<{ data: Employee }>(`/employees/${id}`),
     update: (id: number, data: Partial<Pick<Employee, 'first_name' | 'last_name' | 'department' | 'position'>>) =>
@@ -41,9 +45,9 @@ export const shifts = {
         api.get<PaginatedResponse<Shift>>(`/shifts?page=${page}`),
     get: (id: number) =>
         api.get<{ data: Shift }>(`/shifts/${id}`),
-    create: (data: Partial<Shift>) =>
+    create: (data: Partial<Shift> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
         api.post<{ data: Shift }>('/shifts', data),
-    update: (id: number, data: Partial<Shift>) =>
+    update: (id: number, data: Partial<Shift> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
         api.put<{ data: Shift }>(`/shifts/${id}`, data),
     delete: (id: number) =>
         api.delete<{ message: string }>(`/shifts/${id}`),
