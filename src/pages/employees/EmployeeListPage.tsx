@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router";
 import { employees } from "@/api/endpoints";
 import type { Employee, PaginationMeta } from "@/types/api";
@@ -6,7 +6,6 @@ import Pagination from "@/components/ui/Pagination";
 import { useAuth } from "@/context/useAuth";
 import { sileo } from "sileo";
 import { ApiError } from "@/api/client";
-import { useTableSort } from "@/hooks/useTableSort";
 import SortableHeader from "@/components/ui/SortableHeader";
 import {
   HiOutlineUsers,
@@ -27,15 +26,14 @@ export default function EmployeeListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [searchDebounced, setSearchDebounced] = useState('');
+  const [sortKey, setSortKey] = useState<string>('last_name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  const empAccessors = useMemo(() => ({
-    internal_id: (e: Employee) => e.internal_id,
-    name: (e: Employee) => `${e.first_name} ${e.last_name}`,
-    department: (e: Employee) => e.department ?? '',
-    position: (e: Employee) => e.position ?? '',
-    is_active: (e: Employee) => (e.is_active ? 0 : 1),
-  }), []);
-  const { sortKey, sortDir, toggle, sorted } = useTableSort(data, empAccessors);
+  const toggle = useCallback((column: string) => {
+    setSortDir(prev => sortKey === column ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
+    setSortKey(column);
+    _setPage(1);
+  }, [sortKey]);
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
@@ -50,7 +48,7 @@ export default function EmployeeListPage() {
   useEffect(() => {
     setLoading(true);
     employees
-      .list(page, searchDebounced || undefined)
+      .list(page, searchDebounced || undefined, sortKey, sortDir)
       .then((res) => {
         setData(res.data);
         setMeta(res.meta);
@@ -59,7 +57,7 @@ export default function EmployeeListPage() {
         sileo.error({ title: "Error al cargar empleados" });
       })
       .finally(() => setLoading(false));
-  }, [page, searchDebounced]);
+  }, [page, searchDebounced, sortKey, sortDir]);
 
   const handleToggle = async (id: number) => {
     try {
@@ -107,15 +105,15 @@ export default function EmployeeListPage() {
               <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
                   <SortableHeader label="ID Interno" column="internal_id" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Nombre" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Nombre" column="last_name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <SortableHeader label="Departamento" column="department" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Cargo" column="position" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <th className="px-4 py-3">Cargo</th>
                   <SortableHeader label="Estado" column="is_active" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {sorted.map((emp) => (
+                {data.map((emp) => (
                   <tr key={emp.id} className="hover:bg-grafito-lighter">
                     <td className="px-4 py-3">{emp.internal_id}</td>
                     <td className="px-4 py-3">

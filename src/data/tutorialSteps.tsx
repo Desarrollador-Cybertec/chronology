@@ -25,12 +25,12 @@ const icon = (Icon: React.ComponentType<{ className?: string }>) => <Icon classN
 export const managerSteps = [
   {
     title: 'Panel principal — Tu centro de control',
-    description: 'Al entrar verás 4 tarjetas de resumen: total de empleados, presentes hoy, tardanzas del día y el estado de la última importación. Debajo hay una zona de "Importar CSV rápido" donde puedes arrastrar o seleccionar un archivo sin ir a otra página.',
+    description: 'Al entrar verás 4 tarjetas de resumen: total de empleados, reincidentes de tardanza, total de tardanzas y el estado de la última importación. Debajo hay una zona de "Importar CSV rápido" donde puedes arrastrar o seleccionar un archivo sin ir a otra página.',
     icon: icon(HiOutlineHome),
   },
   {
-    title: 'Asistencia de hoy en el Dashboard',
-    description: 'En la parte inferior del Dashboard se muestra una tabla con las 5 primeras marcaciones del día: nombre del empleado, hora de entrada, minutos de tardanza y su estado. Haz clic en "Ver todo" para abrir la lista completa de asistencia filtrada por la fecha de hoy.',
+    title: 'Reincidentes de tardanza en el Dashboard',
+    description: 'En la parte inferior del Dashboard se muestra una tabla de reincidentes de tardanza: empleados con 2 o más tardanzas. Muestra nombre, veces tarde, total de minutos, promedio y última fecha de tardanza. Haz clic en "Ver todo" para abrir la lista completa de asistencia con tardanzas.',
     icon: icon(HiOutlineClipboardDocumentCheck),
   },
   {
@@ -79,12 +79,12 @@ export const managerSteps = [
 export const adminSteps = [
   {
     title: 'Panel principal — Centro de administración',
-    description: 'El Dashboard muestra 4 KPIs del día: empleados totales, presentes, tardanzas y estado de la última importación. Debajo hay una zona de "Importar CSV rápido" para arrastrar archivos directo sin necesidad de ir a la sección de importaciones.',
+    description: 'El Dashboard muestra 4 KPIs: empleados totales, reincidentes de tardanza, total de tardanzas y estado de la última importación. Debajo hay una zona de "Importar CSV rápido" para arrastrar archivos directo sin necesidad de ir a la sección de importaciones.',
     icon: icon(HiOutlineChartBar),
   },
   {
-    title: 'Asistencia rápida desde el Dashboard',
-    description: 'La tabla inferior del Dashboard muestra las primeras 5 marcaciones de hoy con hora de entrada, tardanza y estado. Haz clic en "Ver todo" para ir a la lista completa de asistencia ya filtrada por la fecha actual.',
+    title: 'Reincidentes de tardanza desde el Dashboard',
+    description: 'La tabla inferior del Dashboard muestra los empleados con tardanzas recurrentes (2 o más): nombre, veces tarde, total de minutos, promedio y última tardanza. Haz clic en "Ver todo" para ir a la lista completa de asistencia con tardanzas, o en "Ver perfil" para ir al detalle del empleado.',
     icon: icon(HiOutlineClipboardDocumentCheck),
   },
   {

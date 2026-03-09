@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +11,6 @@ import Pagination from '@/components/ui/Pagination';
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { shiftAssignmentPageSteps, shiftAssignmentPageAdminSteps } from '@/data/pageTutorials';
-import { useTableSort } from '@/hooks/useTableSort';
 import SortableHeader from '@/components/ui/SortableHeader';
 import {
   HiOutlineUserGroup,
@@ -52,6 +51,19 @@ export default function ShiftAssignmentPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [assigning, setAssigning] = useState(false);
   const [search, setSearch] = useState('');
+  const [searchDebounced, setSearchDebounced] = useState('');
+  const [sortKey, setSortKey] = useState<string>('last_name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const toggle = useCallback((column: string) => {
+    const backendColumn = column === 'shift' ? 'current_shift' : column === 'name' ? 'last_name' : column;
+    setSortDir(prev => sortKey === backendColumn ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
+    setSortKey(backendColumn);
+    _setPage(1);
+  }, [sortKey]);
+
+  // Map backend sort keys back to frontend column names for SortableHeader
+  const displaySortKey = sortKey === 'current_shift' ? 'shift' : sortKey === 'last_name' ? 'name' : sortKey;
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
@@ -73,11 +85,20 @@ export default function ShiftAssignmentPage() {
   }, []);
 
   useEffect(() => {
-    employeesApi.list(page)
+    const timer = setTimeout(() => {
+      setSearchDebounced(search);
+      _setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setLoading(true);
+    employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
       .then((res) => { setEmpList(res.data); setMeta(res.meta); })
       .catch(() => sileo.error({ title: 'Error al cargar empleados' }))
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, searchDebounced, sortKey, sortDir]);
 
   const toggleDay = (day: number) => {
     const current = workDays ?? [];
@@ -141,7 +162,7 @@ export default function ShiftAssignmentPage() {
       setSelected(new Set());
       // Refresh employee list to show updated shift assignments
       setLoading(true);
-      employeesApi.list(page)
+      employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
         .then((res) => { setEmpList(res.data); setMeta(res.meta); })
         .finally(() => setLoading(false));
     }
@@ -154,25 +175,6 @@ export default function ShiftAssignmentPage() {
     );
     return active;
   };
-
-  const filteredEmpList = useMemo(() => {
-    if (!search) return empList;
-    const q = search.toLowerCase();
-    return empList.filter((emp) =>
-      emp.internal_id.toLowerCase().includes(q) ||
-      `${emp.first_name} ${emp.last_name}`.toLowerCase().includes(q) ||
-      (emp.department ?? '').toLowerCase().includes(q)
-    );
-  }, [empList, search]);
-
-  const assignAccessors = useMemo(() => ({
-    internal_id: (e: Employee) => e.internal_id,
-    name: (e: Employee) => `${e.first_name} ${e.last_name}`,
-    department: (e: Employee) => e.department ?? '',
-    shift: (e: Employee) => getCurrentShift(e)?.shift?.name ?? '',
-    is_active: (e: Employee) => (e.is_active ? 0 : 1),
-  }), []);
-  const { sortKey, sortDir, toggle, sorted: sortedEmpList } = useTableSort(filteredEmpList, assignAccessors);
 
   const activeOnPage = empList.filter((e) => e.is_active).map((e) => e.id);
   const allPageSelected = activeOnPage.length > 0 && activeOnPage.every((id) => selected.has(id));
@@ -277,16 +279,16 @@ export default function ShiftAssignmentPage() {
                       />
                     </th>
                   )}
-                  <SortableHeader label="ID" column="internal_id" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Empleado" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Departamento" column="department" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Turno actual" column="shift" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="ID" column="internal_id" sortKey={displaySortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Empleado" column="name" sortKey={displaySortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Departamento" column="department" sortKey={displaySortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Turno actual" column="shift" sortKey={displaySortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Vigencia</th>
-                  <SortableHeader label="Estado" column="is_active" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Estado" column="is_active" sortKey={displaySortKey} sortDir={sortDir} onSort={toggle} />
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {sortedEmpList.map((emp) => {
+                {empList.map((emp) => {
                   const assignment = getCurrentShift(emp);
                   const isSelected = selected.has(emp.id);
                   return (

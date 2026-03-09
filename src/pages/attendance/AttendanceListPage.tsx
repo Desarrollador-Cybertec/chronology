@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { attendance } from '@/api/endpoints';
 import type { AttendanceRecord, PaginationMeta } from '@/types/api';
@@ -6,7 +6,6 @@ import Pagination from '@/components/ui/Pagination';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
-import { useTableSort } from '@/hooks/useTableSort';
 import SortableHeader from '@/components/ui/SortableHeader';
 import {
   HiOutlineClipboardDocumentCheck,
@@ -32,19 +31,14 @@ export default function AttendanceListPage() {
   const [data, setData] = useState<AttendanceRecord[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sortKey, setSortKey] = useState<string>('date_reference');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  const attAccessors = useMemo(() => ({
-    date_reference: (r: AttendanceRecord) => r.date_reference,
-    employee: (r: AttendanceRecord) => `${r.employee.first_name} ${r.employee.last_name}`,
-    shift: (r: AttendanceRecord) => r.shift?.name ?? '',
-    first_check_in: (r: AttendanceRecord) => r.first_check_in ?? '',
-    last_check_out: (r: AttendanceRecord) => r.last_check_out ?? '',
-    worked_minutes: (r: AttendanceRecord) => r.worked_minutes,
-    late_minutes: (r: AttendanceRecord) => r.late_minutes,
-    overtime_minutes: (r: AttendanceRecord) => r.overtime_minutes,
-    status: (r: AttendanceRecord) => r.status,
-  }), []);
-  const { sortKey, sortDir, toggle, sorted } = useTableSort(data, attAccessors);
+  const toggleSort = useCallback((column: string) => {
+    setSortDir(prev => sortKey === column ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
+    setSortKey(column);
+    _setPage(1);
+  }, [sortKey]);
 
   const [employeeId, setEmployeeId] = useState(searchParams.get('employee_id') ?? '');
   const [dateFrom, setDateFrom] = useState(searchParams.get('date_from') ?? '');
@@ -60,12 +54,14 @@ export default function AttendanceListPage() {
     if (dateFrom) params.date_from = dateFrom;
     if (dateTo) params.date_to = dateTo;
     if (status) params.status = status;
+    if (sortKey) params.sort_by = sortKey;
+    if (sortDir) params.order = sortDir;
 
     attendance.list(params)
       .then((res) => { setData(res.data); setMeta(res.meta); })
       .catch(() => sileo.error({ title: 'Error al cargar asistencia' }))
       .finally(() => setLoading(false));
-  }, [page, employeeId, dateFrom, dateTo, status]);
+  }, [page, employeeId, dateFrom, dateTo, status, sortKey, sortDir]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -113,20 +109,20 @@ export default function AttendanceListPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
-                  <SortableHeader label="Fecha" column="date_reference" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Empleado" column="employee" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Turno" column="shift" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Entrada" column="first_check_in" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Salida" column="last_check_out" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Trabajado" column="worked_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Tardanza" column="late_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="HE" column="overtime_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                  <SortableHeader label="Estado" column="status" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Fecha" column="date_reference" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="Empleado" column="employee" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="Turno" column="shift" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="Entrada" column="first_check_in" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="Salida" column="last_check_out" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="Trabajado" column="worked_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="Tardanza" column="late_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="HE" column="overtime_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableHeader label="Estado" column="status" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {sorted.map((rec) => (
+                {data.map((rec) => (
                   <tr key={rec.id} className="hover:bg-grafito-lighter">
                     <td className="px-4 py-3">{rec.date_reference}</td>
                     <td className="px-4 py-3">

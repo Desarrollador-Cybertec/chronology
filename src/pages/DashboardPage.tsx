@@ -92,7 +92,6 @@ export default function DashboardPage() {
       setRecentImport(impRes.data[0] ?? null);
     }).catch(() => sileo.error({ title: 'Error al cargar dashboard' }))
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUpload = async (file: File) => {
@@ -217,25 +216,25 @@ export default function DashboardPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
-                  <SortableHeader label="Empleado" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0" />
-                  <SortableHeader label="Veces tarde" column="count" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0 text-center" />
-                  <SortableHeader label="Total min" column="totalMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0 text-right" />
-                  <SortableHeader label="Promedio" column="avgMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0 text-right" />
-                  <SortableHeader label="Última tardanza" column="lastDate" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0" />
-                  <th className="pb-2"></th>
+                  <SortableHeader label="Empleado" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3" />
+                  <SortableHeader label="Veces tarde" column="count" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3 text-center" />
+                  <SortableHeader label="Total min" column="totalMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3 text-right" />
+                  <SortableHeader label="Promedio" column="avgMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3 text-right" />
+                  <SortableHeader label="Última tardanza" column="lastDate" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3" />
+                  <th className="pb-2 px-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {sortedOffenders.map((o) => (
                   <tr key={o.employeeId}>
-                    <td className="py-2 font-medium text-white">{o.name}</td>
-                    <td className="py-2 text-center">
+                    <td className="py-2 px-3 font-medium text-white">{o.name}</td>
+                    <td className="py-2 px-3 text-center">
                       <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">{o.count}</span>
                     </td>
-                    <td className="py-2 text-right text-red-600 font-medium">{o.totalMinutes} min</td>
-                    <td className="py-2 text-right text-gray-400">{o.avgMinutes} min</td>
-                    <td className="py-2 text-gray-400">{o.lastDate}</td>
-                    <td className="py-2">
+                    <td className="py-2 px-3 text-right text-red-600 font-medium">{o.totalMinutes} min</td>
+                    <td className="py-2 px-3 text-right text-gray-400">{o.avgMinutes} min</td>
+                    <td className="py-2 px-3 text-gray-400">{o.lastDate}</td>
+                    <td className="py-2 px-3">
                       <Link to={`/employees/${o.employeeId}`} className="text-radar hover:underline text-xs">Ver perfil</Link>
                     </td>
                   </tr>

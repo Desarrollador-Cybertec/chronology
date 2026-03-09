@@ -26,9 +26,11 @@ export const auth = {
 
 // ── Employees ──
 export const employees = {
-    list: (page = 1, search?: string) => {
+    list: (page = 1, search?: string, sortBy?: string, order?: 'asc' | 'desc') => {
         const query = new URLSearchParams({ page: String(page) });
         if (search) query.set('search', search);
+        if (sortBy) query.set('sort_by', sortBy);
+        if (order) query.set('order', order);
         return api.get<PaginatedResponse<Employee>>(`/employees?${query.toString()}`);
     },
     get: (id: number) =>
