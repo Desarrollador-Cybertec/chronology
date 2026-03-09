@@ -32,6 +32,7 @@ export default function EmployeeListPage() {
   const toggle = useCallback((column: string) => {
     setSortDir(prev => sortKey === column ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
     setSortKey(column);
+    setLoading(true);
     _setPage(1);
   }, [sortKey]);
 
@@ -39,6 +40,7 @@ export default function EmployeeListPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      setLoading(true);
       setSearchDebounced(search);
       _setPage(1);
     }, 400);
@@ -46,7 +48,6 @@ export default function EmployeeListPage() {
   }, [search]);
 
   useEffect(() => {
-    setLoading(true);
     employees
       .list(page, searchDebounced || undefined, sortKey, sortDir)
       .then((res) => {
