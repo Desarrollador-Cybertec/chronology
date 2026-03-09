@@ -6,7 +6,7 @@ export function Skeleton({ className = '' }: SkeletonProps) {
   return <div className={`animate-pulse rounded-lg bg-white/10 ${className}`} />;
 }
 
-export function SkeletonText({ className = '' }: SkeletonProps) {
+function SkeletonText({ className = '' }: SkeletonProps) {
   return <div className={`animate-pulse rounded bg-white/10 h-4 ${className}`} />;
 }
 

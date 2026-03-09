@@ -59,6 +59,7 @@ export default function ShiftAssignmentPage() {
     const backendColumn = column === 'shift' ? 'current_shift' : column === 'name' ? 'last_name' : column;
     setSortDir(prev => sortKey === backendColumn ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
     setSortKey(backendColumn);
+    setLoading(true);
     _setPage(1);
   }, [sortKey]);
 
@@ -86,6 +87,7 @@ export default function ShiftAssignmentPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      setLoading(true);
       setSearchDebounced(search);
       _setPage(1);
     }, 400);
@@ -93,7 +95,6 @@ export default function ShiftAssignmentPage() {
   }, [search]);
 
   useEffect(() => {
-    setLoading(true);
     employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
       .then((res) => { setEmpList(res.data); setMeta(res.meta); })
       .catch(() => sileo.error({ title: 'Error al cargar empleados' }))
@@ -217,8 +218,8 @@ export default function ShiftAssignmentPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-300">Días</label>
-              <div className="flex gap-1">
+              <label id="work-days-label" className="mb-1 block text-xs font-medium text-gray-300">Días</label>
+              <div className="flex gap-1" role="group" aria-labelledby="work-days-label">
                 {DAY_OPTIONS.map((d) => (
                   <button
                     key={d.value}

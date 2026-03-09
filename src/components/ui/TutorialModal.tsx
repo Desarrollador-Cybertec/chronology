@@ -53,9 +53,9 @@ export default function TutorialModal({ steps, buttonLabel = 'Tutorial' }: Tutor
 
             {/* Progress dots */}
             <div className="mt-6 flex items-center justify-center gap-1.5">
-              {steps.map((_, i) => (
+              {steps.map((s, i) => (
                 <button
-                  key={i}
+                  key={s.title}
                   onClick={() => setCurrent(i)}
                   className={`h-2 rounded-full transition-all cursor-pointer ${i === current ? 'w-6 bg-radar' : 'w-2 bg-white/20 hover:bg-white/40'}`}
                 />

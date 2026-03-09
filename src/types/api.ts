@@ -173,8 +173,4 @@ export interface SystemSetting {
   group: string;
 }
 
-// ── API Error ──
-export interface ApiValidationError {
-  message: string;
-  errors: Record<string, string[]>;
-}
+

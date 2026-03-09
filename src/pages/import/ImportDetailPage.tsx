@@ -59,8 +59,8 @@ export default function ImportDetailPage() {
           <div className="mt-6">
             <h4 className="text-sm font-semibold text-white">Errores</h4>
             <ul className="mt-2 space-y-1">
-              {batch.errors.map((e, i) => (
-                <li key={i} className="text-sm text-red-600">• {e}</li>
+              {batch.errors.map((e) => (
+                <li key={e} className="text-sm text-red-600">• {e}</li>
               ))}
             </ul>
           </div>

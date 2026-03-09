@@ -10,7 +10,7 @@ export const shiftBreakSchema = z.object({
   position: z.coerce.number().min(0),
 });
 
-export type ShiftBreakFormData = z.infer<typeof shiftBreakSchema>;
+type ShiftBreakFormData = z.infer<typeof shiftBreakSchema>;
 
 export const shiftSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
