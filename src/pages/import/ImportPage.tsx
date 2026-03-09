@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { sileo } from 'sileo';
 import { imports } from '@/api/endpoints';
@@ -17,6 +17,8 @@ import {
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { importPageSteps, importPageAdminSteps } from '@/data/pageTutorials';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableHeader from '@/components/ui/SortableHeader';
 
 export default function ImportPage() {
   const { isSuperadmin } = useAuth();
@@ -26,6 +28,16 @@ export default function ImportPage() {
   const [uploading, setUploading] = useState(false);
   const [processingBatch, setProcessingBatch] = useState<ImportBatch | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const impAccessors = useMemo(() => ({
+    id: (b: ImportBatch) => b.id,
+    original_filename: (b: ImportBatch) => b.original_filename,
+    total_rows: (b: ImportBatch) => b.total_rows,
+    processed_rows: (b: ImportBatch) => b.processed_rows,
+    failed_rows: (b: ImportBatch) => b.failed_rows,
+    status: (b: ImportBatch) => b.status,
+  }), []);
+  const { sortKey, sortDir, toggle, sorted } = useTableSort(batches, impAccessors);
 
   const fetchBatches = () => {
     setLoading(true);
@@ -114,17 +126,17 @@ export default function ImportPage() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-white/8 text-xs uppercase text-gray-400">
-                    <th className="px-4 py-3">#</th>
-                    <th className="px-4 py-3">Archivo</th>
-                    <th className="px-4 py-3">Filas</th>
-                    <th className="px-4 py-3">Procesadas</th>
-                    <th className="px-4 py-3">Fallidas</th>
-                    <th className="px-4 py-3">Estado</th>
+                    <SortableHeader label="#" column="id" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                    <SortableHeader label="Archivo" column="original_filename" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                    <SortableHeader label="Filas" column="total_rows" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                    <SortableHeader label="Procesadas" column="processed_rows" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                    <SortableHeader label="Fallidas" column="failed_rows" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                    <SortableHeader label="Estado" column="status" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                     <th className="px-4 py-3">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {batches.map((b) => (
+                  {sorted.map((b) => (
                     <tr key={b.id} className="hover:bg-grafito-lighter">
                       <td className="px-4 py-3">{b.id}</td>
                       <td className="px-4 py-3">{b.original_filename}</td>

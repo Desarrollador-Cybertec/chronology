@@ -45,9 +45,9 @@ export const shifts = {
         api.get<PaginatedResponse<Shift>>(`/shifts?page=${page}`),
     get: (id: number) =>
         api.get<{ data: Shift }>(`/shifts/${id}`),
-    create: (data: Partial<Shift> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
+    create: (data: Omit<Partial<Shift>, 'breaks'> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
         api.post<{ data: Shift }>('/shifts', data),
-    update: (id: number, data: Partial<Shift> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
+    update: (id: number, data: Omit<Partial<Shift>, 'breaks'> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
         api.put<{ data: Shift }>(`/shifts/${id}`, data),
     delete: (id: number) =>
         api.delete<{ message: string }>(`/shifts/${id}`),

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@/context/useAuth';
 import { attendance, employees, imports } from '@/api/endpoints';
@@ -19,6 +19,8 @@ import {
   HiOutlineArrowTopRightOnSquare,
 } from 'react-icons/hi2';
 import { SkeletonCard, SkeletonTable, Skeleton } from '@/components/ui/Skeleton';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableHeader from '@/components/ui/SortableHeader';
 
 interface LateOffender {
   employeeId: number;
@@ -38,6 +40,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [processingBatch, setProcessingBatch] = useState<ImportBatch | null>(null);
+
+  const lateAccessors = useMemo(() => ({
+    name: (o: LateOffender) => o.name,
+    count: (o: LateOffender) => o.count,
+    totalMinutes: (o: LateOffender) => o.totalMinutes,
+    avgMinutes: (o: LateOffender) => o.avgMinutes,
+    lastDate: (o: LateOffender) => o.lastDate,
+  }), []);
+  const { sortKey, sortDir, toggle, sorted: sortedOffenders } = useTableSort(lateOffenders, lateAccessors);
 
   useEffect(() => {
     Promise.all([
@@ -206,16 +217,16 @@ export default function DashboardPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
-                  <th className="pb-2">Empleado</th>
-                  <th className="pb-2 text-center">Veces tarde</th>
-                  <th className="pb-2 text-right">Total min</th>
-                  <th className="pb-2 text-right">Promedio</th>
-                  <th className="pb-2">Última tardanza</th>
+                  <SortableHeader label="Empleado" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0" />
+                  <SortableHeader label="Veces tarde" column="count" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0 text-center" />
+                  <SortableHeader label="Total min" column="totalMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0 text-right" />
+                  <SortableHeader label="Promedio" column="avgMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0 text-right" />
+                  <SortableHeader label="Última tardanza" column="lastDate" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-0" />
                   <th className="pb-2"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {lateOffenders.map((o) => (
+                {sortedOffenders.map((o) => (
                   <tr key={o.employeeId}>
                     <td className="py-2 font-medium text-white">{o.name}</td>
                     <td className="py-2 text-center">

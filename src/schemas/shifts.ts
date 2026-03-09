@@ -7,7 +7,7 @@ export const shiftBreakSchema = z.object({
   start_time: z.string().regex(timeRegex, 'Formato HH:mm'),
   end_time: z.string().regex(timeRegex, 'Formato HH:mm'),
   duration_minutes: z.coerce.number().min(1, 'Mínimo 1 minuto').max(120),
-  position: z.coerce.number().min(0).optional(),
+  position: z.coerce.number().min(0),
 });
 
 export type ShiftBreakFormData = z.infer<typeof shiftBreakSchema>;
@@ -17,10 +17,6 @@ export const shiftSchema = z.object({
   start_time: z.string().regex(timeRegex, 'Formato HH:mm'),
   end_time: z.string().regex(timeRegex, 'Formato HH:mm'),
   crosses_midnight: z.boolean().optional(),
-  lunch_required: z.boolean().optional(),
-  lunch_start_time: z.string().regex(timeRegex, 'Formato HH:mm').optional().or(z.literal('')),
-  lunch_end_time: z.string().regex(timeRegex, 'Formato HH:mm').optional().or(z.literal('')),
-  lunch_duration_minutes: z.coerce.number().min(0).max(120).optional(),
   tolerance_minutes: z.coerce.number().min(0).max(60).optional(),
   overtime_enabled: z.boolean().optional(),
   overtime_min_block_minutes: z.coerce.number().min(0).optional(),

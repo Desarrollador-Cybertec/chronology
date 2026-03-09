@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +11,8 @@ import Pagination from '@/components/ui/Pagination';
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { shiftAssignmentPageSteps, shiftAssignmentPageAdminSteps } from '@/data/pageTutorials';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableHeader from '@/components/ui/SortableHeader';
 import {
   HiOutlineUserGroup,
   HiOutlineCheckCircle,
@@ -153,6 +155,25 @@ export default function ShiftAssignmentPage() {
     return active;
   };
 
+  const filteredEmpList = useMemo(() => {
+    if (!search) return empList;
+    const q = search.toLowerCase();
+    return empList.filter((emp) =>
+      emp.internal_id.toLowerCase().includes(q) ||
+      `${emp.first_name} ${emp.last_name}`.toLowerCase().includes(q) ||
+      (emp.department ?? '').toLowerCase().includes(q)
+    );
+  }, [empList, search]);
+
+  const assignAccessors = useMemo(() => ({
+    internal_id: (e: Employee) => e.internal_id,
+    name: (e: Employee) => `${e.first_name} ${e.last_name}`,
+    department: (e: Employee) => e.department ?? '',
+    shift: (e: Employee) => getCurrentShift(e)?.shift?.name ?? '',
+    is_active: (e: Employee) => (e.is_active ? 0 : 1),
+  }), []);
+  const { sortKey, sortDir, toggle, sorted: sortedEmpList } = useTableSort(filteredEmpList, assignAccessors);
+
   const activeOnPage = empList.filter((e) => e.is_active).map((e) => e.id);
   const allPageSelected = activeOnPage.length > 0 && activeOnPage.every((id) => selected.has(id));
 
@@ -256,24 +277,16 @@ export default function ShiftAssignmentPage() {
                       />
                     </th>
                   )}
-                  <th className="px-4 py-3">ID</th>
-                  <th className="px-4 py-3">Empleado</th>
-                  <th className="px-4 py-3">Departamento</th>
-                  <th className="px-4 py-3">Turno actual</th>
+                  <SortableHeader label="ID" column="internal_id" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Empleado" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Departamento" column="department" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Turno actual" column="shift" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Vigencia</th>
-                  <th className="px-4 py-3">Estado</th>
+                  <SortableHeader label="Estado" column="is_active" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {empList.filter((emp) => {
-                  if (!search) return true;
-                  const q = search.toLowerCase();
-                  return (
-                    emp.internal_id.toLowerCase().includes(q) ||
-                    `${emp.first_name} ${emp.last_name}`.toLowerCase().includes(q) ||
-                    (emp.department ?? '').toLowerCase().includes(q)
-                  );
-                }).map((emp) => {
+                {sortedEmpList.map((emp) => {
                   const assignment = getCurrentShift(emp);
                   const isSelected = selected.has(emp.id);
                   return (

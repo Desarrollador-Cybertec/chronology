@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
-import { useForm, useWatch, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { sileo } from 'sileo';
@@ -37,8 +37,6 @@ export default function ShiftEditPage() {
     resolver: zodResolver(shiftSchema) as Resolver<ShiftFormData>,
   });
 
-  const lunchRequired = useWatch({ control, name: 'lunch_required' });
-
   const { fields, append, remove } = useFieldArray({ control, name: 'breaks' });
 
   useEffect(() => {
@@ -50,10 +48,6 @@ export default function ShiftEditPage() {
         start_time: res.data.start_time.slice(0, 5),
         end_time: res.data.end_time.slice(0, 5),
         crosses_midnight: res.data.crosses_midnight,
-        lunch_required: res.data.lunch_required,
-        lunch_start_time: res.data.lunch_start_time?.slice(0, 5) ?? '',
-        lunch_end_time: res.data.lunch_end_time?.slice(0, 5) ?? '',
-        lunch_duration_minutes: res.data.lunch_duration_minutes ?? 60,
         tolerance_minutes: res.data.tolerance_minutes,
         overtime_enabled: res.data.overtime_enabled,
         overtime_min_block_minutes: res.data.overtime_min_block_minutes ?? 30,
@@ -74,11 +68,6 @@ export default function ShiftEditPage() {
   const onSubmit = async (data: ShiftFormData) => {
     try {
       const payload = { ...data };
-      if (!payload.lunch_required) {
-        payload.lunch_start_time = undefined;
-        payload.lunch_end_time = undefined;
-        payload.lunch_duration_minutes = 0;
-      }
       if (payload.breaks) {
         payload.breaks = payload.breaks.map((b, i) => ({ ...b, position: i }));
       }
@@ -134,30 +123,6 @@ export default function ShiftEditPage() {
             </label>
           </div>
 
-          <div className="sm:col-span-2">
-            <label className="flex items-center gap-2 text-sm text-gray-300">
-              <input type="checkbox" {...register('lunch_required')} className="rounded" />
-              Requiere almuerzo (legacy)
-            </label>
-          </div>
-
-          {lunchRequired && (
-            <>
-              <div>
-                <label htmlFor="lunch_start_time" className="mb-1 block text-sm font-medium text-gray-300">Inicio almuerzo</label>
-                <input id="lunch_start_time" type="time" {...register('lunch_start_time')} className={inputBase} />
-              </div>
-              <div>
-                <label htmlFor="lunch_end_time" className="mb-1 block text-sm font-medium text-gray-300">Fin almuerzo</label>
-                <input id="lunch_end_time" type="time" {...register('lunch_end_time')} className={inputBase} />
-              </div>
-              <div>
-                <label htmlFor="lunch_duration_minutes" className="mb-1 block text-sm font-medium text-gray-300">Duración almuerzo (min)</label>
-                <input id="lunch_duration_minutes" type="number" {...register('lunch_duration_minutes')} className={inputBase} />
-              </div>
-            </>
-          )}
-
           {/* Break Blocks Section */}
           <div className="sm:col-span-2">
             <div className="flex items-center justify-between">
@@ -170,7 +135,7 @@ export default function ShiftEditPage() {
                 <HiOutlinePlusCircle className="h-4 w-4" /> Agregar bloque
               </button>
             </div>
-            <p className="mt-1 text-xs text-gray-500">Si se definen bloques de descanso, estos tienen prioridad sobre la configuración de almuerzo legacy.</p>
+            <p className="mt-1 text-xs text-gray-500">Define los bloques de descanso del turno (almuerzo, meriendas, etc.).</p>
 
             {fields.length > 0 && (
               <div className="mt-3 space-y-3">

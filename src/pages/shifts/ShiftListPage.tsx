@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { shifts } from '@/api/endpoints';
 import type { Shift, PaginationMeta } from '@/types/api';
 import Pagination from '@/components/ui/Pagination';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableHeader from '@/components/ui/SortableHeader';
 import {
   HiOutlineClock,
   HiOutlinePencilSquare,
@@ -21,6 +23,16 @@ export default function ShiftListPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [page, _setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  const shiftAccessors = useMemo(() => ({
+    name: (s: Shift) => s.name,
+    start_time: (s: Shift) => s.start_time,
+    tolerance_minutes: (s: Shift) => s.tolerance_minutes,
+    breaks: (s: Shift) => s.breaks?.length ?? 0,
+    overtime_enabled: (s: Shift) => (s.overtime_enabled ? 0 : 1),
+    is_active: (s: Shift) => (s.is_active ? 0 : 1),
+  }), []);
+  const { sortKey, sortDir, toggle, sorted } = useTableSort(data, shiftAccessors);
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
@@ -68,17 +80,17 @@ export default function ShiftListPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
-                  <th className="px-4 py-3">Nombre</th>
-                  <th className="px-4 py-3">Horario</th>
-                  <th className="px-4 py-3">Tolerancia</th>
-                  <th className="px-4 py-3">Descansos</th>
-                  <th className="px-4 py-3">HE</th>
-                  <th className="px-4 py-3">Estado</th>
+                  <SortableHeader label="Nombre" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Horario" column="start_time" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Tolerancia" column="tolerance_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Descansos" column="breaks" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="HE" column="overtime_enabled" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Estado" column="is_active" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {data.map((shift) => (
+                {sorted.map((shift) => (
                   <tr key={shift.id} className="hover:bg-grafito-lighter">
                     <td className="px-4 py-3 font-medium">{shift.name}</td>
                     <td className="px-4 py-3">
@@ -89,7 +101,7 @@ export default function ShiftListPage() {
                     <td className="px-4 py-3">
                       {shift.breaks && shift.breaks.length > 0
                         ? `${shift.breaks.length} bloque${shift.breaks.length > 1 ? 's' : ''} (${shift.breaks.reduce((sum, b) => sum + b.duration_minutes, 0)} min)`
-                        : shift.lunch_required ? `${shift.lunch_duration_minutes ?? 0} min` : 'No'}
+                        : 'No'}
                     </td>
                     <td className="px-4 py-3">{shift.overtime_enabled ? 'Sí' : 'No'}</td>
                     <td className="px-4 py-3">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router";
 import { employees } from "@/api/endpoints";
 import type { Employee, PaginationMeta } from "@/types/api";
@@ -6,6 +6,8 @@ import Pagination from "@/components/ui/Pagination";
 import { useAuth } from "@/context/useAuth";
 import { sileo } from "sileo";
 import { ApiError } from "@/api/client";
+import { useTableSort } from "@/hooks/useTableSort";
+import SortableHeader from "@/components/ui/SortableHeader";
 import {
   HiOutlineUsers,
   HiOutlineEye,
@@ -25,6 +27,15 @@ export default function EmployeeListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [searchDebounced, setSearchDebounced] = useState('');
+
+  const empAccessors = useMemo(() => ({
+    internal_id: (e: Employee) => e.internal_id,
+    name: (e: Employee) => `${e.first_name} ${e.last_name}`,
+    department: (e: Employee) => e.department ?? '',
+    position: (e: Employee) => e.position ?? '',
+    is_active: (e: Employee) => (e.is_active ? 0 : 1),
+  }), []);
+  const { sortKey, sortDir, toggle, sorted } = useTableSort(data, empAccessors);
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
@@ -95,16 +106,16 @@ export default function EmployeeListPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
-                  <th className="px-4 py-3">ID Interno</th>
-                  <th className="px-4 py-3">Nombre</th>
-                  <th className="px-4 py-3">Departamento</th>
-                  <th className="px-4 py-3">Cargo</th>
-                  <th className="px-4 py-3">Estado</th>
+                  <SortableHeader label="ID Interno" column="internal_id" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Nombre" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Departamento" column="department" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Cargo" column="position" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                  <SortableHeader label="Estado" column="is_active" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {data.map((emp) => (
+                {sorted.map((emp) => (
                   <tr key={emp.id} className="hover:bg-grafito-lighter">
                     <td className="px-4 py-3">{emp.internal_id}</td>
                     <td className="px-4 py-3">
