@@ -9,6 +9,7 @@ import { HiOutlineCog6Tooth, HiOutlineCheckCircle } from 'react-icons/hi2';
 import { SkeletonForm } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { settingsSteps } from '@/data/pageTutorials';
+import { INPUT_BASE } from '@/constants/ui';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -25,8 +26,7 @@ export default function SettingsPage() {
   useEffect(() => {
     settings.list()
       .then((res) => {
-        const values: Record<string, string> = {};
-        res.data.forEach((s) => { values[s.key] = s.value; });
+        const values = Object.fromEntries(res.data.map((s) => [s.key, s.value]));
         reset({
           noise_window_minutes: Number(values.noise_window_minutes ?? 60),
           auto_assign_shift: (values.auto_assign_shift ?? 'true') as 'true' | 'false',
@@ -55,8 +55,6 @@ export default function SettingsPage() {
     }
   };
 
-  const inputBase = 'w-full rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
-
   if (loading) return (
     <div>
       <div className="flex items-center gap-2">
@@ -84,14 +82,14 @@ export default function SettingsPage() {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="noise_window_minutes" className="mb-1 block text-sm font-medium text-gray-300">Ventana de ruido (min)</label>
-                <input id="noise_window_minutes" type="number" {...register('noise_window_minutes')} className={inputBase} />
+                <input id="noise_window_minutes" type="number" {...register('noise_window_minutes')} className={INPUT_BASE} />
                 <span className="mt-1 block text-xs text-gray-400">Filtra marcajes duplicados dentro de esta ventana</span>
                 {errors.noise_window_minutes && <span className="mt-1 block text-xs text-red-500">{errors.noise_window_minutes.message}</span>}
               </div>
 
               <div>
                 <label htmlFor="auto_assign_shift" className="mb-1 block text-sm font-medium text-gray-300">Auto-asignar turno</label>
-                <select id="auto_assign_shift" {...register('auto_assign_shift')} className={inputBase}>
+                <select id="auto_assign_shift" {...register('auto_assign_shift')} className={INPUT_BASE}>
                   <option value="true">Habilitado</option>
                   <option value="false">Deshabilitado</option>
                 </select>
@@ -100,32 +98,32 @@ export default function SettingsPage() {
 
               <div>
                 <label htmlFor="auto_assign_tolerance_minutes" className="mb-1 block text-sm font-medium text-gray-300">Tolerancia auto-asignación (min)</label>
-                <input id="auto_assign_tolerance_minutes" type="number" {...register('auto_assign_tolerance_minutes')} className={inputBase} />
+                <input id="auto_assign_tolerance_minutes" type="number" {...register('auto_assign_tolerance_minutes')} className={INPUT_BASE} />
                 <span className="mt-1 block text-xs text-gray-400">Ventana alrededor del inicio de turno para match</span>
                 {errors.auto_assign_tolerance_minutes && <span className="mt-1 block text-xs text-red-500">{errors.auto_assign_tolerance_minutes.message}</span>}
               </div>
 
               <div>                  <label htmlFor="auto_assign_regularity_percent" className="mb-1 block text-sm font-medium text-gray-300">Regularidad auto-asignación (%)</label>
-                  <input id="auto_assign_regularity_percent" type="number" {...register('auto_assign_regularity_percent')} className={inputBase} />
+                  <input id="auto_assign_regularity_percent" type="number" {...register('auto_assign_regularity_percent')} className={INPUT_BASE} />
                   <span className="mt-1 block text-xs text-gray-400">% mínimo de días que deben coincidir por semana</span>
                   {errors.auto_assign_regularity_percent && <span className="mt-1 block text-xs text-red-500">{errors.auto_assign_regularity_percent.message}</span>}
                 </div>
 
                 <div>                <label htmlFor="lunch_margin_minutes" className="mb-1 block text-sm font-medium text-gray-300">Margen almuerzo (min)</label>
-                <input id="lunch_margin_minutes" type="number" {...register('lunch_margin_minutes')} className={inputBase} />
+                <input id="lunch_margin_minutes" type="number" {...register('lunch_margin_minutes')} className={INPUT_BASE} />
                 <span className="mt-1 block text-xs text-gray-400">Margen para detectar marcajes de almuerzo</span>
                 {errors.lunch_margin_minutes && <span className="mt-1 block text-xs text-red-500">{errors.lunch_margin_minutes.message}</span>}
               </div>
 
               <div>
                 <label htmlFor="diurnal_start_time" className="mb-1 block text-sm font-medium text-gray-300">Inicio período diurno</label>
-                <input id="diurnal_start_time" type="time" {...register('diurnal_start_time')} className={inputBase} />
+                <input id="diurnal_start_time" type="time" {...register('diurnal_start_time')} className={INPUT_BASE} />
                 {errors.diurnal_start_time && <span className="mt-1 block text-xs text-red-500">{errors.diurnal_start_time.message}</span>}
               </div>
 
               <div>
                 <label htmlFor="nocturnal_start_time" className="mb-1 block text-sm font-medium text-gray-300">Inicio período nocturno</label>
-                <input id="nocturnal_start_time" type="time" {...register('nocturnal_start_time')} className={inputBase} />
+                <input id="nocturnal_start_time" type="time" {...register('nocturnal_start_time')} className={INPUT_BASE} />
                 {errors.nocturnal_start_time && <span className="mt-1 block text-xs text-red-500">{errors.nocturnal_start_time.message}</span>}
               </div>
             </div>
@@ -136,7 +134,7 @@ export default function SettingsPage() {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="data_retention_months" className="mb-1 block text-sm font-medium text-gray-300">Retención de datos (meses)</label>
-                <input id="data_retention_months" type="number" {...register('data_retention_months')} className={inputBase} />
+                <input id="data_retention_months" type="number" {...register('data_retention_months')} className={INPUT_BASE} />
                 <span className="mt-1 block text-xs text-gray-400">Meses de retención de datos históricos</span>
                 {errors.data_retention_months && <span className="mt-1 block text-xs text-red-500">{errors.data_retention_months.message}</span>}
               </div>

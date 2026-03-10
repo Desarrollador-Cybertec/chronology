@@ -9,8 +9,7 @@ import type { Employee } from '@/types/api';
 import { SkeletonForm } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { employeeEditSteps } from '@/data/pageTutorials';
-
-const inputBase = 'w-full rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
+import { INPUT_BASE } from '@/constants/ui';
 
 export default function EmployeeEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -66,24 +65,24 @@ export default function EmployeeEditPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="first_name" className="mb-1 block text-sm font-medium text-gray-300">Nombre</label>
-            <input id="first_name" {...register('first_name')} className={`${inputBase} ${errors.first_name ? 'border-red-400' : ''}`} />
+            <input id="first_name" {...register('first_name')} className={`${INPUT_BASE} ${errors.first_name ? 'border-red-400' : ''}`} />
             {errors.first_name && <span className="mt-1 block text-xs text-red-500">{errors.first_name.message}</span>}
           </div>
 
           <div>
             <label htmlFor="last_name" className="mb-1 block text-sm font-medium text-gray-300">Apellido</label>
-            <input id="last_name" {...register('last_name')} className={`${inputBase} ${errors.last_name ? 'border-red-400' : ''}`} />
+            <input id="last_name" {...register('last_name')} className={`${INPUT_BASE} ${errors.last_name ? 'border-red-400' : ''}`} />
             {errors.last_name && <span className="mt-1 block text-xs text-red-500">{errors.last_name.message}</span>}
           </div>
 
           <div>
             <label htmlFor="department" className="mb-1 block text-sm font-medium text-gray-300">Departamento</label>
-            <input id="department" {...register('department')} className={inputBase} />
+            <input id="department" {...register('department')} className={INPUT_BASE} />
           </div>
 
           <div>
             <label htmlFor="position" className="mb-1 block text-sm font-medium text-gray-300">Cargo</label>
-            <input id="position" {...register('position')} className={inputBase} />
+            <input id="position" {...register('position')} className={INPUT_BASE} />
           </div>
 
           <div className="flex gap-3 pt-2 sm:col-span-2">

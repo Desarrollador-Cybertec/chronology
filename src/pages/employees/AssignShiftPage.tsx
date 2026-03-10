@@ -9,8 +9,7 @@ import { shiftAssignmentSchema, type ShiftAssignmentFormData } from '@/schemas/a
 import type { Shift } from '@/types/api';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { assignShiftSteps } from '@/data/pageTutorials';
-
-const inputBase = 'w-full rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
+import { INPUT_BASE } from '@/constants/ui';
 
 const DAY_OPTIONS = [
   { value: 1, label: 'Lunes' },
@@ -80,7 +79,7 @@ export default function AssignShiftPage() {
 
           <div>
             <label htmlFor="shift_id" className="mb-1 block text-sm font-medium text-gray-300">Turno</label>
-            <select id="shift_id" {...register('shift_id')} className={`${inputBase} ${errors.shift_id ? 'border-red-400' : ''}`}>
+            <select id="shift_id" {...register('shift_id')} className={`${INPUT_BASE} ${errors.shift_id ? 'border-red-400' : ''}`}>
               <option value="">Seleccionar turno...</option>
               {shifts.map((s) => (
                 <option key={s.id} value={s.id}>{s.name} ({s.start_time} - {s.end_time})</option>
@@ -91,13 +90,13 @@ export default function AssignShiftPage() {
 
           <div>
             <label htmlFor="effective_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha de inicio</label>
-            <input id="effective_date" type="date" {...register('effective_date')} className={`${inputBase} ${errors.effective_date ? 'border-red-400' : ''}`} />
+            <input id="effective_date" type="date" {...register('effective_date')} className={`${INPUT_BASE} ${errors.effective_date ? 'border-red-400' : ''}`} />
             {errors.effective_date && <span className="mt-1 block text-xs text-red-500">{errors.effective_date.message}</span>}
           </div>
 
           <div>
             <label htmlFor="end_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha fin (opcional)</label>
-            <input id="end_date" type="date" {...register('end_date')} className={inputBase} />
+            <input id="end_date" type="date" {...register('end_date')} className={INPUT_BASE} />
           </div>
 
           <div className="sm:col-span-2">

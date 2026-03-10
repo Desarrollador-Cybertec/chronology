@@ -5,8 +5,7 @@ import { sileo } from 'sileo';
 import { registerSchema, type RegisterFormData } from '@/schemas/auth';
 import { auth } from '@/api/endpoints';
 import { ApiError } from '@/api/client';
-
-const inputBase = 'w-full rounded-lg border bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
+import { INPUT_BASE } from '@/constants/ui';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -50,25 +49,25 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           <div>
             <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-300">Nombre</label>
-            <input id="name" type="text" autoComplete="name" {...register('name')} className={`${inputBase} ${errors.name ? 'border-red-400' : 'border-white/10'}`} />
+            <input id="name" type="text" autoComplete="name" {...register('name')} className={`${INPUT_BASE} ${errors.name ? 'border-red-400' : 'border-white/10'}`} />
             {errors.name && <span className="mt-1 block text-xs text-red-400">{errors.name.message}</span>}
           </div>
 
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-300">Email</label>
-            <input id="email" type="email" autoComplete="email" {...register('email')} className={`${inputBase} ${errors.email ? 'border-red-400' : 'border-white/10'}`} />
+            <input id="email" type="email" autoComplete="email" {...register('email')} className={`${INPUT_BASE} ${errors.email ? 'border-red-400' : 'border-white/10'}`} />
             {errors.email && <span className="mt-1 block text-xs text-red-400">{errors.email.message}</span>}
           </div>
 
           <div>
             <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-300">Contraseña</label>
-            <input id="password" type="password" autoComplete="new-password" {...register('password')} className={`${inputBase} ${errors.password ? 'border-red-400' : 'border-white/10'}`} />
+            <input id="password" type="password" autoComplete="new-password" {...register('password')} className={`${INPUT_BASE} ${errors.password ? 'border-red-400' : 'border-white/10'}`} />
             {errors.password && <span className="mt-1 block text-xs text-red-400">{errors.password.message}</span>}
           </div>
 
           <div>
             <label htmlFor="password_confirmation" className="mb-1 block text-sm font-medium text-gray-300">Confirmar contraseña</label>
-            <input id="password_confirmation" type="password" autoComplete="new-password" {...register('password_confirmation')} className={`${inputBase} ${errors.password_confirmation ? 'border-red-400' : 'border-white/10'}`} />
+            <input id="password_confirmation" type="password" autoComplete="new-password" {...register('password_confirmation')} className={`${INPUT_BASE} ${errors.password_confirmation ? 'border-red-400' : 'border-white/10'}`} />
             {errors.password_confirmation && <span className="mt-1 block text-xs text-red-400">{errors.password_confirmation.message}</span>}
           </div>
 

@@ -34,6 +34,7 @@ interface LateOffender {
 export default function DashboardPage() {
   const { user, isSuperadmin } = useAuth();
   const [lateOffenders, setLateOffenders] = useState<LateOffender[]>([]);
+  const [singleLates, setSingleLates] = useState<LateOffender[]>([]);
   const [totalLateRecords, setTotalLateRecords] = useState(0);
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [recentImport, setRecentImport] = useState<ImportBatch | null>(null);
@@ -75,8 +76,7 @@ export default function DashboardPage() {
         }
       }
 
-      const offenders: LateOffender[] = Array.from(grouped.entries())
-        .filter(([, v]) => v.count >= 2)
+      const all: LateOffender[] = Array.from(grouped.entries())
         .map(([id, v]) => ({
           employeeId: id,
           name: v.name,
@@ -84,10 +84,11 @@ export default function DashboardPage() {
           totalMinutes: v.totalMinutes,
           avgMinutes: Math.round(v.totalMinutes / v.count),
           lastDate: v.lastDate,
-        }))
-        .sort((a, b) => b.count - a.count);
+        }));
 
+      const offenders = all.filter(o => o.count >= 2).sort((a, b) => b.count - a.count);
       setLateOffenders(offenders);
+      setSingleLates(all.filter(o => o.count === 1).sort((a, b) => b.totalMinutes - a.totalMinutes));
       setTotalEmployees(empRes.meta.total);
       setRecentImport(impRes.data[0] ?? null);
     }).catch(() => sileo.error({ title: 'Error al cargar dashboard' }))
@@ -212,8 +213,36 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {lateOffenders.length === 0 ? (
-          <p className="text-sm text-gray-400">No hay empleados con tardanzas recurrentes.</p>
+        {lateOffenders.length === 0 && singleLates.length === 0 ? (
+          <p className="text-sm text-gray-400">No hay empleados con tardanzas registradas.</p>
+        ) : lateOffenders.length === 0 ? (
+          <>
+            <p className="mb-3 text-sm text-gray-400">No hay reincidentes — tardanzas únicas:</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
+                  <tr>
+                    <th className="pb-2 px-3">Empleado</th>
+                    <th className="pb-2 px-3 text-right">Minutos tarde</th>
+                    <th className="pb-2 px-3">Fecha</th>
+                    <th className="pb-2 px-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {singleLates.map((o) => (
+                    <tr key={o.employeeId}>
+                      <td className="py-2 px-3 font-medium text-white">{o.name}</td>
+                      <td className="py-2 px-3 text-right text-amber-400 font-medium">{o.totalMinutes} min</td>
+                      <td className="py-2 px-3 text-gray-400">{o.lastDate}</td>
+                      <td className="py-2 px-3">
+                        <Link to={`/employees/${o.employeeId}`} className="text-radar hover:underline text-xs">Ver perfil</Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">

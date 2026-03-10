@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { User } from '@/types/api';
 import { auth } from '@/api/endpoints';
 import { setToken, clearToken } from '@/api/client';
+import { AUTH_TOKEN_KEY } from '@/constants/api';
 import { AuthContext } from './authTypes';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -21,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (token) {
       fetchUser();
     } else {

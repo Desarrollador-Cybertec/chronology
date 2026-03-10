@@ -12,8 +12,7 @@ import {
   HiOutlineTrash,
   HiOutlineXMark,
 } from 'react-icons/hi2';
-
-const inputBase = 'rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
+import { INPUT_BASE } from '@/constants/ui';
 
 export default function ScheduleExceptionsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -143,7 +142,7 @@ export default function ScheduleExceptionsPage() {
           placeholder="ID empleado"
           value={employeeId}
           onChange={(e) => setEmployeeId(e.target.value)}
-          className={`${inputBase} w-40`}
+          className={`${INPUT_BASE} w-40`}
         />
         <button
           className="flex items-center gap-1.5 rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark cursor-pointer"
@@ -240,7 +239,7 @@ export default function ScheduleExceptionsPage() {
                       placeholder="Buscar por nombre o ID..."
                       value={employeeSearch}
                       onChange={(e) => setEmployeeSearch(e.target.value)}
-                      className={`w-full ${inputBase}`}
+                      className={`w-full ${INPUT_BASE}`}
                     />
                     {employeeResults.length > 0 && (
                       <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-white/10 bg-grafito-light shadow-lg">
@@ -264,7 +263,7 @@ export default function ScheduleExceptionsPage() {
               {/* Date */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-300">Fecha</label>
-                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className={`w-full ${inputBase}`} />
+                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className={`w-full ${INPUT_BASE}`} />
               </div>
 
               {/* Is working day */}
@@ -285,7 +284,7 @@ export default function ScheduleExceptionsPage() {
                   rows={2}
                   value={formReason}
                   onChange={(e) => setFormReason(e.target.value)}
-                  className={`w-full ${inputBase}`}
+                  className={`w-full ${INPUT_BASE}`}
                   placeholder="Ej: Permiso personal, feriado empresa..."
                 />
               </div>

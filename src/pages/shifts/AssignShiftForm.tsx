@@ -3,6 +3,7 @@ import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { Shift } from '@/types/api';
+import { INPUT_BASE, DAY_OPTIONS } from '@/constants/ui';
 
 const assignSchema = z.object({
   shift_id: z.coerce.number().min(1, 'Selecciona un turno'),
@@ -12,18 +13,6 @@ const assignSchema = z.object({
 });
 
 export type AssignFormData = z.infer<typeof assignSchema>;
-
-const inputBase = 'w-full rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
-
-const DAY_OPTIONS = [
-  { value: 1, label: 'Lun' },
-  { value: 2, label: 'Mar' },
-  { value: 3, label: 'Mié' },
-  { value: 4, label: 'Jue' },
-  { value: 5, label: 'Vie' },
-  { value: 6, label: 'Sáb' },
-  { value: 0, label: 'Dom' },
-];
 
 interface AssignShiftFormProps {
   shifts: Shift[];
@@ -58,7 +47,7 @@ export default function AssignShiftForm({ shifts, selectedCount, assigning, onSu
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-wrap items-end gap-4">
         <div className="min-w-45 flex-1">
           <label htmlFor="shift_id" className="mb-1 block text-xs font-medium text-gray-300">Turno</label>
-          <select id="shift_id" {...register('shift_id')} className={`${inputBase} ${errors.shift_id ? 'border-red-400' : ''}`}>
+          <select id="shift_id" {...register('shift_id')} className={`${INPUT_BASE} ${errors.shift_id ? 'border-red-400' : ''}`}>
             <option value="">Seleccionar turno...</option>
             {shifts.map((s) => (
               <option key={s.id} value={s.id}>{s.name} ({s.start_time} – {s.end_time})</option>
@@ -69,13 +58,13 @@ export default function AssignShiftForm({ shifts, selectedCount, assigning, onSu
 
         <div className="min-w-37.5">
           <label htmlFor="effective_date" className="mb-1 block text-xs font-medium text-gray-300">Fecha inicio</label>
-          <input id="effective_date" type="date" {...register('effective_date')} className={`${inputBase} ${errors.effective_date ? 'border-red-400' : ''}`} />
+          <input id="effective_date" type="date" {...register('effective_date')} className={`${INPUT_BASE} ${errors.effective_date ? 'border-red-400' : ''}`} />
           {errors.effective_date && <span className="mt-1 block text-xs text-red-400">{errors.effective_date.message}</span>}
         </div>
 
         <div className="min-w-37.5">
           <label htmlFor="end_date" className="mb-1 block text-xs font-medium text-gray-300">Fecha fin (opc.)</label>
-          <input id="end_date" type="date" {...register('end_date')} className={inputBase} />
+          <input id="end_date" type="date" {...register('end_date')} className={INPUT_BASE} />
         </div>
 
         <div>

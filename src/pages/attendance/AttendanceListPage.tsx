@@ -16,14 +16,8 @@ import {
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { attendanceListSteps, attendanceListAdminSteps } from '@/data/pageTutorials';
-
-const inputBase = 'rounded-lg border border-white/10 bg-grafito-light px-3 py-2 text-sm text-white outline-none transition focus:ring-2 focus:ring-radar';
-
-function formatMinutes(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
+import { INPUT_BASE } from '@/constants/ui';
+import { formatMinutes } from '@/utils/formatting';
 
 export default function AttendanceListPage() {
   const { isSuperadmin } = useAuth();
@@ -87,10 +81,10 @@ export default function AttendanceListPage() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
-        <input type="number" placeholder="ID empleado" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={`${inputBase} w-32`} />
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={inputBase} />
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={inputBase} />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputBase}>
+        <input type="number" placeholder="ID empleado" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={`${INPUT_BASE} w-32`} />
+        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={INPUT_BASE} />
+        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={INPUT_BASE} />
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className={INPUT_BASE}>
           <option value="">Todos los estados</option>
           <option value="present">Presente</option>
           <option value="absent">Ausente</option>

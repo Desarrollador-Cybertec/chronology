@@ -8,12 +8,7 @@ import { sileo } from 'sileo';
 import { SkeletonDetail } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { attendanceDetailSteps } from '@/data/pageTutorials';
-
-function formatMinutes(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
+import { formatMinutes } from '@/utils/formatting';
 
 export default function AttendanceDetailPage() {
   const { id } = useParams<{ id: string }>();

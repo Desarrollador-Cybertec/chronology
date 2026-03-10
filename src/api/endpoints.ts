@@ -1,4 +1,5 @@
 import { api } from './client';
+import { buildQueryString } from '@/utils/formatting';
 import type {
     User,
     LoginResponse,
@@ -27,11 +28,8 @@ export const auth = {
 // ── Employees ──
 export const employees = {
     list: (page = 1, search?: string, sortBy?: string, order?: 'asc' | 'desc') => {
-        const query = new URLSearchParams({ page: String(page) });
-        if (search) query.set('search', search);
-        if (sortBy) query.set('sort_by', sortBy);
-        if (order) query.set('order', order);
-        return api.get<PaginatedResponse<Employee>>(`/employees?${query.toString()}`);
+        const qs = buildQueryString({ page, search, sort_by: sortBy, order });
+        return api.get<PaginatedResponse<Employee>>(`/employees?${qs}`);
     },
     get: (id: number) =>
         api.get<{ data: Employee }>(`/employees/${id}`),
@@ -43,8 +41,10 @@ export const employees = {
 
 // ── Shifts ──
 export const shifts = {
-    list: (page = 1, perPage?: number) =>
-        api.get<PaginatedResponse<Shift>>(`/shifts?page=${page}${perPage ? `&per_page=${perPage}` : ''}`),
+    list: (page = 1, perPage?: number) => {
+        const qs = buildQueryString({ page, per_page: perPage });
+        return api.get<PaginatedResponse<Shift>>(`/shifts?${qs}`);
+    },
     get: (id: number) =>
         api.get<{ data: Shift }>(`/shifts/${id}`),
     create: (data: Omit<Partial<Shift>, 'breaks'> & { breaks?: Omit<ShiftBreak, 'id'>[] }) =>
@@ -72,10 +72,7 @@ export const shiftAssignments = {
 // ── Schedule Exceptions ──
 export const scheduleExceptions = {
     listByEmployee: (employeeId: number, params?: { per_page?: number; page?: number }) => {
-        const query = new URLSearchParams();
-        if (params?.per_page) query.set('per_page', String(params.per_page));
-        if (params?.page) query.set('page', String(params.page));
-        const qs = query.toString();
+        const qs = buildQueryString(params ?? {});
         return api.get<PaginatedResponse<ScheduleException>>(`/employees/${employeeId}/schedule-exceptions${qs ? `?${qs}` : ''}`);
     },
     get: (id: number) =>
@@ -91,35 +88,17 @@ export const scheduleExceptions = {
 // ── Attendance ──
 export const attendance = {
     list: (params?: Record<string, string | number>) => {
-        const query = new URLSearchParams();
-        if (params) {
-            Object.entries(params).forEach(([k, v]) => {
-                if (v !== undefined && v !== '') query.set(k, String(v));
-            });
-        }
-        const qs = query.toString();
+        const qs = buildQueryString(params ?? {});
         return api.get<PaginatedResponse<AttendanceRecord>>(`/attendance${qs ? `?${qs}` : ''}`);
     },
     get: (id: number) =>
         api.get<{ data: AttendanceRecord }>(`/attendance/${id}`),
     byEmployee: (employeeId: number, params?: Record<string, string | number>) => {
-        const query = new URLSearchParams();
-        if (params) {
-            Object.entries(params).forEach(([k, v]) => {
-                if (v !== undefined && v !== '') query.set(k, String(v));
-            });
-        }
-        const qs = query.toString();
+        const qs = buildQueryString(params ?? {});
         return api.get<PaginatedResponse<AttendanceRecord>>(`/attendance/employee/${employeeId}${qs ? `?${qs}` : ''}`);
     },
     byDay: (date: string, params?: Record<string, string | number>) => {
-        const query = new URLSearchParams();
-        if (params) {
-            Object.entries(params).forEach(([k, v]) => {
-                if (v !== undefined && v !== '') query.set(k, String(v));
-            });
-        }
-        const qs = query.toString();
+        const qs = buildQueryString(params ?? {});
         return api.get<PaginatedResponse<AttendanceRecord>>(`/attendance/day/${date}${qs ? `?${qs}` : ''}`);
     },
     update: (id: number, data: Record<string, unknown>) =>

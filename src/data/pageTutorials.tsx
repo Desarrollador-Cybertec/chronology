@@ -22,8 +22,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineAdjustmentsHorizontal,
 } from 'react-icons/hi2';
-
-const icon = (Icon: React.ComponentType<{ className?: string }>) => <Icon className="h-6 w-6" />;
+import { icon } from '@/utils/icons';
 
 /* ── Empleados: Lista ── */
 export const employeeListSteps = [

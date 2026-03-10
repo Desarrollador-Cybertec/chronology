@@ -49,32 +49,6 @@ export default function FileDropZone({ onFileSelected, accept = '.csv,.txt', dis
     }
   };
 
-  if (compact) {
-    return (
-      <div
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); !disabled && inputRef.current?.click(); } }}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        onClick={() => !disabled && inputRef.current?.click()}
-        className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed px-4 py-3 transition ${
-          dragging
-            ? 'border-radar bg-radar/10'
-            : 'border-white/10 hover:border-radar hover:bg-grafito-lighter'
-        } ${disabled ? 'pointer-events-none opacity-50' : ''}`}
-      >
-        <HiOutlineArrowUpTray className={`h-5 w-5 shrink-0 ${dragging ? 'text-radar' : 'text-gray-400'}`} />
-        <span className="text-sm text-gray-400">
-          {dragging ? 'Suelta el archivo aquí' : 'Arrastra un CSV o haz clic para seleccionar'}
-        </span>
-        <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={handleChange} />
-      </div>
-    );
-  }
-
   return (
     <div
       role="button"
@@ -85,17 +59,29 @@ export default function FileDropZone({ onFileSelected, accept = '.csv,.txt', dis
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onClick={() => !disabled && inputRef.current?.click()}
-      className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition ${
+      className={`flex cursor-pointer rounded-${compact ? 'lg' : 'xl'} border-2 border-dashed transition ${
+        compact
+          ? 'items-center gap-3 px-4 py-3'
+          : 'flex-col items-center justify-center p-8'
+      } ${
         dragging
           ? 'border-radar bg-radar/10'
           : 'border-white/10 hover:border-radar hover:bg-grafito-lighter'
       } ${disabled ? 'pointer-events-none opacity-50' : ''}`}
     >
-      <HiOutlineArrowUpTray className={`h-10 w-10 ${dragging ? 'text-radar' : 'text-gray-400'}`} />
-      <p className="mt-3 text-sm font-medium text-gray-300">
-        {dragging ? 'Suelta el archivo aquí' : 'Arrastra tu archivo CSV aquí'}
-      </p>
-      <p className="mt-1 text-xs text-gray-400">o haz clic para seleccionar · Máx 10 MB</p>
+      <HiOutlineArrowUpTray className={`${compact ? 'h-5 w-5 shrink-0' : 'h-10 w-10'} ${dragging ? 'text-radar' : 'text-gray-400'}`} />
+      {compact ? (
+        <span className="text-sm text-gray-400">
+          {dragging ? 'Suelta el archivo aquí' : 'Arrastra un CSV o haz clic para seleccionar'}
+        </span>
+      ) : (
+        <>
+          <p className="mt-3 text-sm font-medium text-gray-300">
+            {dragging ? 'Suelta el archivo aquí' : 'Arrastra tu archivo CSV aquí'}
+          </p>
+          <p className="mt-1 text-xs text-gray-400">o haz clic para seleccionar · Máx 10 MB</p>
+        </>
+      )}
       <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={handleChange} />
     </div>
   );

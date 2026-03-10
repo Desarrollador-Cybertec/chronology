@@ -1,17 +1,17 @@
-import { sileo } from 'sileo';
+import { AUTH_TOKEN_KEY, HTTP_STATUS } from '@/constants/api';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
 function getToken(): string | null {
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem('auth_token', token);
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
 }
 
 export function clearToken(): void {
-  localStorage.removeItem('auth_token');
+  localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
 class ApiError extends Error {
@@ -51,24 +51,18 @@ async function request<T>(
     headers,
   });
 
-  if (res.status === 401) {
+  if (res.status === HTTP_STATUS.UNAUTHORIZED) {
     clearToken();
     window.location.href = '/login';
-    throw new ApiError(401, { message: 'No autorizado' });
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, { message: 'No autorizado' });
   }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: 'Error desconocido' }));
-    if (res.status === 422) {
-      throw new ApiError(422, body);
-    }
-    if (res.status === 403) {
-      sileo.error({ title: 'Acceso denegado', description: 'No tienes permiso para esta acción.' });
-    }
     throw new ApiError(res.status, body);
   }
 
-  if (res.status === 204) return undefined as T;
+  if (res.status === HTTP_STATUS.NO_CONTENT) return undefined as T;
   return res.json();
 }
 

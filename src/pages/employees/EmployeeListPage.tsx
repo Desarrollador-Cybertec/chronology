@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
 import { Link } from "react-router";
 import { employees } from "@/api/endpoints";
 import type { Employee, PaginationMeta } from "@/types/api";
@@ -24,8 +25,10 @@ export default function EmployeeListPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [page, _setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [searchDebounced, setSearchDebounced] = useState('');
+  const { search, setSearch, debouncedValue: searchDebounced } = useDebouncedSearch(undefined, () => {
+    setLoading(true);
+    _setPage(1);
+  });
   const [sortKey, setSortKey] = useState<string>('last_name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -37,16 +40,6 @@ export default function EmployeeListPage() {
   }, [sortKey]);
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
-
-  useEffect(() => {
-    if (search === searchDebounced) return;
-    const timer = setTimeout(() => {
-      setLoading(true);
-      setSearchDebounced(search);
-      _setPage(1);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search, searchDebounced]);
 
   useEffect(() => {
     employees

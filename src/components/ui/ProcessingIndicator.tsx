@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { imports } from '@/api/endpoints';
 import type { ImportBatch } from '@/types/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { HiOutlineDocumentText, HiOutlineCheckCircle, HiOutlineXCircle } from 'react-icons/hi2';
+import { usePollBatch } from '@/hooks/usePollBatch';
 
 interface ProcessingIndicatorProps {
   batch: ImportBatch;
@@ -10,33 +9,7 @@ interface ProcessingIndicatorProps {
 }
 
 export default function ProcessingIndicator({ batch: initial, onComplete }: ProcessingIndicatorProps) {
-  const [batch, setBatch] = useState(initial);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>(null);
-  const finished = batch.status === 'completed' || batch.status === 'failed';
-
-  useEffect(() => {
-    if (finished) {
-      const timeout = setTimeout(() => onComplete(batch), 2500);
-      return () => clearTimeout(timeout);
-    }
-
-    intervalRef.current = setInterval(async () => {
-      try {
-        const res = await imports.get(batch.id);
-        setBatch(res.data);
-        if (res.data.status === 'completed' || res.data.status === 'failed') {
-          clearInterval(intervalRef.current!);
-        }
-      } catch {
-        // keep polling
-      }
-    }, 3000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finished]);
+  const { batch, finished } = usePollBatch(initial, onComplete);
 
   const progress = batch.total_rows > 0
     ? Math.round((batch.processed_rows / batch.total_rows) * 100)

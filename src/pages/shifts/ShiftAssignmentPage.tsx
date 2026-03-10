@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
+import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
 import { sileo } from 'sileo';
 import { employees as employeesApi, shifts as shiftsApi, shiftAssignments } from '@/api/endpoints';
 import type { Employee, Shift, ShiftAssignment, PaginationMeta } from '@/types/api';
@@ -16,9 +17,13 @@ import { HiOutlineUserGroup, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 function getCurrentAssignment(assignments: ShiftAssignment[] | undefined) {
   if (!assignments?.length) return undefined;
   const today = new Date().toISOString().slice(0, 10);
-  return assignments.find(
+  // Try active assignment first
+  const active = assignments.find(
     (a) => a.effective_date <= today && (!a.end_date || a.end_date >= today),
   );
+  if (active) return active;
+  // Fallback: most recent assignment (even if expired)
+  return [...assignments].sort((a, b) => b.effective_date.localeCompare(a.effective_date))[0];
 }
 
 export default function ShiftAssignmentPage() {
@@ -31,8 +36,10 @@ export default function ShiftAssignmentPage() {
   const [assignmentMap, setAssignmentMap] = useState<Record<number, ShiftAssignment[]>>({});
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [assigning, setAssigning] = useState(false);
-  const [search, setSearch] = useState('');
-  const [searchDebounced, setSearchDebounced] = useState('');
+  const { search, setSearch, debouncedValue: searchDebounced } = useDebouncedSearch(undefined, () => {
+    setLoading(true);
+    _setPage(1);
+  });
   const [sortKey, setSortKey] = useState<string>('last_name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -53,10 +60,18 @@ export default function ShiftAssignmentPage() {
       const res = await employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir);
       setEmpList(res.data);
       setMeta(res.meta);
+      const entries = await Promise.all(
+        res.data.map(async (emp) => {
+          try {
+            const assignRes = await shiftAssignments.listByEmployee(emp.id);
+            return [emp.id, assignRes.data] as const;
+          } catch {
+            return [emp.id, [] as ShiftAssignment[]] as const;
+          }
+        }),
+      );
       const map: Record<number, ShiftAssignment[]> = {};
-      for (const emp of res.data) {
-        map[emp.id] = emp.shift_assignments ?? [];
-      }
+      for (const [id, assigns] of entries) map[id] = assigns;
       setAssignmentMap(map);
     } catch {
       sileo.error({ title: 'Error al cargar empleados' });
@@ -68,16 +83,6 @@ export default function ShiftAssignmentPage() {
   useEffect(() => {
     shiftsApi.list(1, 100).then((res) => setShifts(res.data));
   }, []);
-
-  useEffect(() => {
-    if (search === searchDebounced) return;
-    const timer = setTimeout(() => {
-      setLoading(true);
-      setSearchDebounced(search);
-      _setPage(1);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search, searchDebounced]);
 
   useEffect(() => {
     fetchEmployeesWithAssignments();
@@ -112,23 +117,21 @@ export default function ShiftAssignmentPage() {
     }
 
     setAssigning(true);
-    let ok = 0;
-    let fail = 0;
 
-    for (const empId of selected) {
-      try {
-        await shiftAssignments.create({
+    const results = await Promise.allSettled(
+      [...selected].map((empId) =>
+        shiftAssignments.create({
           employee_id: empId,
           shift_id: data.shift_id,
           effective_date: data.effective_date,
           end_date: data.end_date || undefined,
           work_days: data.work_days,
-        });
-        ok++;
-      } catch {
-        fail++;
-      }
-    }
+        }),
+      ),
+    );
+
+    const ok = results.filter((r) => r.status === 'fulfilled').length;
+    const fail = results.filter((r) => r.status === 'rejected').length;
 
     setAssigning(false);
 

@@ -18,6 +18,8 @@ interface EmployeeAssignRowProps {
 
 export default function EmployeeAssignRow({ emp, assignment, shifts, isSelected, isSuperadmin, onToggle, onUnassign }: EmployeeAssignRowProps) {
   const shift = assignment ? (assignment.shift ?? shifts.find(s => s.id === assignment.shift_id)) : undefined;
+  const today = new Date().toISOString().slice(0, 10);
+  const isExpired = assignment?.end_date ? assignment.end_date < today : false;
 
   return (
     <tr className={`transition-colors ${isSelected ? 'bg-radar/5' : 'hover:bg-grafito-lighter'} ${!emp.is_active ? 'opacity-50' : ''}`}>
@@ -37,10 +39,11 @@ export default function EmployeeAssignRow({ emp, assignment, shifts, isSelected,
       <td className="px-4 py-3 text-gray-300">{emp.department ?? '—'}</td>
       <td className="px-4 py-3">
         {shift ? (
-          <span className="inline-flex items-center gap-1.5 text-sm">
-            <HiOutlineClock className="h-4 w-4 text-radar" />
-            <span className="text-white">{shift.name}</span>
+          <span className={`inline-flex items-center gap-1.5 text-sm ${isExpired ? 'opacity-50' : ''}`}>
+            <HiOutlineClock className={`h-4 w-4 ${isExpired ? 'text-gray-400' : 'text-radar'}`} />
+            <span className={isExpired ? 'text-gray-400' : 'text-white'}>{shift.name}</span>
             <span className="text-gray-400">({shift.start_time} – {shift.end_time})</span>
+            {isExpired && <span className="ml-1 rounded bg-gray-600/30 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">Vencido</span>}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 text-sm text-amber-400">

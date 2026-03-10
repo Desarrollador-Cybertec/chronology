@@ -18,8 +18,7 @@ import {
   HiOutlineListBullet,
   HiOutlineShieldCheck,
 } from 'react-icons/hi2';
-
-const icon = (Icon: React.ComponentType<{ className?: string }>) => <Icon className="h-6 w-6" />;
+import { icon } from '@/utils/icons';
 
 /* ── Manager tutorial (10 steps) ── */
 export const managerSteps = [
