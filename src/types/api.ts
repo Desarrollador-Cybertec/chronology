@@ -67,7 +67,6 @@ export interface Employee {
 // ── Shifts ──
 export interface ShiftBreak {
   id: number;
-  shift_id: number;
   type: string;
   start_time: string;
   end_time: string;
@@ -81,10 +80,6 @@ export interface Shift {
   start_time: string;
   end_time: string;
   crosses_midnight: boolean;
-  lunch_required: boolean;
-  lunch_start_time: string | null;
-  lunch_end_time: string | null;
-  lunch_duration_minutes: number | null;
   tolerance_minutes: number;
   overtime_enabled: boolean;
   overtime_min_block_minutes: number | null;
@@ -135,8 +130,6 @@ export interface AttendanceRecord {
   employee_id: number;
   employee: Employee;
   date_reference: string;
-  shift_id: number | null;
-  shift: Shift | null;
   first_check_in: string | null;
   last_check_out: string | null;
   worked_minutes: number;

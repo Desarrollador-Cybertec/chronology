@@ -1,4 +1,4 @@
-import type { Employee, ShiftAssignment } from '@/types/api';
+import type { Employee, Shift, ShiftAssignment } from '@/types/api';
 import {
   HiOutlineCheckCircle,
   HiOutlineXCircle,
@@ -9,13 +9,16 @@ import {
 interface EmployeeAssignRowProps {
   emp: Employee;
   assignment: ShiftAssignment | undefined;
+  shifts: Shift[];
   isSelected: boolean;
   isSuperadmin: boolean;
   onToggle: (id: number) => void;
   onUnassign?: (assignmentId: number, empName: string) => void;
 }
 
-export default function EmployeeAssignRow({ emp, assignment, isSelected, isSuperadmin, onToggle, onUnassign }: EmployeeAssignRowProps) {
+export default function EmployeeAssignRow({ emp, assignment, shifts, isSelected, isSuperadmin, onToggle, onUnassign }: EmployeeAssignRowProps) {
+  const shift = assignment ? (assignment.shift ?? shifts.find(s => s.id === assignment.shift_id)) : undefined;
+
   return (
     <tr className={`transition-colors ${isSelected ? 'bg-radar/5' : 'hover:bg-grafito-lighter'} ${!emp.is_active ? 'opacity-50' : ''}`}>
       {isSuperadmin && (
@@ -33,11 +36,11 @@ export default function EmployeeAssignRow({ emp, assignment, isSelected, isSuper
       <td className="px-4 py-3 font-medium text-white">{emp.first_name} {emp.last_name}</td>
       <td className="px-4 py-3 text-gray-300">{emp.department ?? '—'}</td>
       <td className="px-4 py-3">
-        {assignment?.shift ? (
+        {shift ? (
           <span className="inline-flex items-center gap-1.5 text-sm">
             <HiOutlineClock className="h-4 w-4 text-radar" />
-            <span className="text-white">{assignment.shift.name}</span>
-            <span className="text-gray-400">({assignment.shift.start_time} – {assignment.shift.end_time})</span>
+            <span className="text-white">{shift.name}</span>
+            <span className="text-gray-400">({shift.start_time} – {shift.end_time})</span>
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 text-sm text-amber-400">

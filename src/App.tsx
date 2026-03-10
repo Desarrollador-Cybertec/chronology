@@ -19,6 +19,7 @@ import AttendanceDetailPage from '@/pages/attendance/AttendanceDetailPage';
 import AttendanceEditPage from '@/pages/attendance/AttendanceEditPage';
 import ImportPage from '@/pages/import/ImportPage';
 import ImportDetailPage from '@/pages/import/ImportDetailPage';
+import ScheduleExceptionsPage from '@/pages/schedule-exceptions/ScheduleExceptionsPage';
 import SettingsPage from '@/pages/settings/SettingsPage';
 
 function App() {
@@ -53,6 +54,9 @@ function App() {
               {/* Import */}
               <Route path="/import" element={<ImportPage />} />
               <Route path="/import/:id" element={<ImportDetailPage />} />
+
+              {/* Schedule Exceptions */}
+              <Route path="/schedule-exceptions" element={<ScheduleExceptionsPage />} />
 
               {/* Superadmin routes */}
               <Route element={<SuperadminRoute />}>

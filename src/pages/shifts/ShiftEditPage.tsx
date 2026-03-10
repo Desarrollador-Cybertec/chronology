@@ -32,12 +32,30 @@ export default function ShiftEditPage() {
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ShiftFormData>({
     resolver: zodResolver(shiftSchema) as Resolver<ShiftFormData>,
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'breaks' });
+
+  const watchedBreaks = watch('breaks');
+
+  useEffect(() => {
+    watchedBreaks?.forEach((b, i) => {
+      if (b.start_time && b.end_time) {
+        const [sh, sm] = b.start_time.split(':').map(Number);
+        const [eh, em] = b.end_time.split(':').map(Number);
+        const diff = (eh * 60 + em) - (sh * 60 + sm);
+        const duration = diff > 0 ? diff : 0;
+        if (duration !== b.duration_minutes) {
+          setValue(`breaks.${i}.duration_minutes`, duration);
+        }
+      }
+    });
+  }, [watchedBreaks, setValue]);
 
   useEffect(() => {
     if (!id) return;
@@ -169,7 +187,7 @@ export default function ShiftEditPage() {
                       </div>
                       <div>
                         <label className="mb-1 block text-xs text-gray-400">Duración (min)</label>
-                        <input type="number" {...register(`breaks.${index}.duration_minutes`)} className={inputBase} />
+                        <input type="number" {...register(`breaks.${index}.duration_minutes`)} className={`${inputBase} bg-white/5`} readOnly />
                         {errors.breaks?.[index]?.duration_minutes && <span className="mt-1 block text-xs text-red-400">{errors.breaks[index].duration_minutes.message}</span>}
                       </div>
                     </div>

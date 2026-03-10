@@ -43,13 +43,13 @@ export const employees = {
 
 // ── Shifts ──
 export const shifts = {
-    list: (page = 1) =>
-        api.get<PaginatedResponse<Shift>>(`/shifts?page=${page}`),
+    list: (page = 1, perPage?: number) =>
+        api.get<PaginatedResponse<Shift>>(`/shifts?page=${page}${perPage ? `&per_page=${perPage}` : ''}`),
     get: (id: number) =>
         api.get<{ data: Shift }>(`/shifts/${id}`),
-    create: (data: Omit<Partial<Shift>, 'breaks'> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
+    create: (data: Omit<Partial<Shift>, 'breaks'> & { breaks?: Omit<ShiftBreak, 'id'>[] }) =>
         api.post<{ data: Shift }>('/shifts', data),
-    update: (id: number, data: Omit<Partial<Shift>, 'breaks'> & { breaks?: Omit<ShiftBreak, 'id' | 'shift_id'>[] }) =>
+    update: (id: number, data: Omit<Partial<Shift>, 'breaks'> & { breaks?: Omit<ShiftBreak, 'id'>[] }) =>
         api.put<{ data: Shift }>(`/shifts/${id}`, data),
     delete: (id: number) =>
         api.delete<{ message: string }>(`/shifts/${id}`),

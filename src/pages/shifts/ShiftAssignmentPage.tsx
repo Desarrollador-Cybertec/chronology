@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { sileo } from 'sileo';
 import { employees as employeesApi, shifts as shiftsApi, shiftAssignments } from '@/api/endpoints';
-import type { Employee, Shift, PaginationMeta } from '@/types/api';
+import type { Employee, Shift, ShiftAssignment, PaginationMeta } from '@/types/api';
 import { useAuth } from '@/context/useAuth';
 import Pagination from '@/components/ui/Pagination';
 import { SkeletonTable } from '@/components/ui/Skeleton';
@@ -13,9 +13,10 @@ import type { AssignFormData } from './AssignShiftForm';
 import EmployeeAssignRow from './EmployeeAssignRow';
 import { HiOutlineUserGroup, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 
-function getCurrentShift(emp: Employee) {
+function getCurrentAssignment(assignments: ShiftAssignment[] | undefined) {
+  if (!assignments?.length) return undefined;
   const today = new Date().toISOString().slice(0, 10);
-  return emp.shift_assignments?.find(
+  return assignments.find(
     (a) => a.effective_date <= today && (!a.end_date || a.end_date >= today),
   );
 }
@@ -27,6 +28,7 @@ export default function ShiftAssignmentPage() {
   const [page, _setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [assignmentMap, setAssignmentMap] = useState<Record<number, ShiftAssignment[]>>({});
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [assigning, setAssigning] = useState(false);
   const [search, setSearch] = useState('');
@@ -46,8 +48,25 @@ export default function ShiftAssignmentPage() {
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
+  const fetchEmployeesWithAssignments = useCallback(async () => {
+    try {
+      const res = await employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir);
+      setEmpList(res.data);
+      setMeta(res.meta);
+      const map: Record<number, ShiftAssignment[]> = {};
+      for (const emp of res.data) {
+        map[emp.id] = emp.shift_assignments ?? [];
+      }
+      setAssignmentMap(map);
+    } catch {
+      sileo.error({ title: 'Error al cargar empleados' });
+    } finally {
+      setLoading(false);
+    }
+  }, [page, searchDebounced, sortKey, sortDir]);
+
   useEffect(() => {
-    shiftsApi.list(1).then((res) => setShifts(res.data));
+    shiftsApi.list(1, 100).then((res) => setShifts(res.data));
   }, []);
 
   useEffect(() => {
@@ -61,11 +80,8 @@ export default function ShiftAssignmentPage() {
   }, [search, searchDebounced]);
 
   useEffect(() => {
-    employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
-      .then((res) => { setEmpList(res.data); setMeta(res.meta); })
-      .catch(() => sileo.error({ title: 'Error al cargar empleados' }))
-      .finally(() => setLoading(false));
-  }, [page, searchDebounced, sortKey, sortDir]);
+    fetchEmployeesWithAssignments();
+  }, [fetchEmployeesWithAssignments]);
 
   const toggleEmployee = (id: number) => {
     setSelected((prev) => {
@@ -122,9 +138,7 @@ export default function ShiftAssignmentPage() {
     if (ok > 0) {
       setSelected(new Set());
       setLoading(true);
-      employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
-        .then((res) => { setEmpList(res.data); setMeta(res.meta); })
-        .finally(() => setLoading(false));
+      fetchEmployeesWithAssignments();
     }
   };
 
@@ -134,9 +148,7 @@ export default function ShiftAssignmentPage() {
       await shiftAssignments.delete(assignmentId);
       sileo.success({ title: `Turno desasignado de ${empName}` });
       setLoading(true);
-      employeesApi.list(page, searchDebounced || undefined, sortKey, sortDir)
-        .then((res) => { setEmpList(res.data); setMeta(res.meta); })
-        .finally(() => setLoading(false));
+      fetchEmployeesWithAssignments();
     } catch {
       sileo.error({ title: 'Error al desasignar turno' });
     }
@@ -208,7 +220,8 @@ export default function ShiftAssignmentPage() {
                   <EmployeeAssignRow
                     key={emp.id}
                     emp={emp}
-                    assignment={getCurrentShift(emp)}
+                    assignment={getCurrentAssignment(assignmentMap[emp.id])}
+                    shifts={shifts}
                     isSelected={selected.has(emp.id)}
                     isSuperadmin={isSuperadmin}
                     onToggle={toggleEmployee}

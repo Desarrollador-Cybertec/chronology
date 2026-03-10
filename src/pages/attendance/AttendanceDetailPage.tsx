@@ -58,7 +58,7 @@ export default function AttendanceDetailPage() {
                 {record.employee.first_name} {record.employee.last_name}
               </Link>
             </dd></div>
-            <div className="flex justify-between"><dt className="text-gray-400">Turno</dt><dd className="font-medium">{record.shift?.name ?? '—'}</dd></div>
+
           </dl>
         </div>
 

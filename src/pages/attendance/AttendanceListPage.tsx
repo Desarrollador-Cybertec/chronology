@@ -34,12 +34,6 @@ export default function AttendanceListPage() {
   const [sortKey, setSortKey] = useState<string>('date_reference');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  const toggleSort = useCallback((column: string) => {
-    setSortDir(prev => sortKey === column ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
-    setSortKey(column);
-    _setPage(1);
-  }, [sortKey]);
-
   const [employeeId, setEmployeeId] = useState(searchParams.get('employee_id') ?? '');
   const [dateFrom, setDateFrom] = useState(searchParams.get('date_from') ?? '');
   const [dateTo, setDateTo] = useState(searchParams.get('date_to') ?? '');
@@ -47,6 +41,12 @@ export default function AttendanceListPage() {
   const [page, _setPage] = useState(Number(searchParams.get('page') ?? 1));
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
+
+  const toggleSort = useCallback((column: string) => {
+    setSortDir(prev => sortKey === column ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
+    setSortKey(column);
+    _setPage(1);
+  }, [sortKey]);
 
   const fetchData = useCallback(() => {
     const params: Record<string, string | number> = { page, per_page: 15 };
@@ -102,7 +102,7 @@ export default function AttendanceListPage() {
       </div>
 
       {loading ? (
-        <SkeletonTable cols={10} rows={5} />
+          <SkeletonTable cols={9} rows={5} />
       ) : (
         <>
           <div className="mt-6 overflow-x-auto rounded-xl bg-grafito shadow-sm">
@@ -111,7 +111,7 @@ export default function AttendanceListPage() {
                 <tr>
                   <SortableHeader label="Fecha" column="date_reference" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <SortableHeader label="Empleado" column="employee" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableHeader label="Turno" column="shift" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+
                   <SortableHeader label="Entrada" column="first_check_in" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <SortableHeader label="Salida" column="last_check_out" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <SortableHeader label="Trabajado" column="worked_minutes" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
@@ -130,7 +130,7 @@ export default function AttendanceListPage() {
                         {rec.employee.first_name} {rec.employee.last_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3">{rec.shift?.name ?? '—'}</td>
+
                     <td className="px-4 py-3">{rec.first_check_in?.split(' ')[1] ?? '—'}</td>
                     <td className="px-4 py-3">{rec.last_check_out?.split(' ')[1] ?? '—'}</td>
                     <td className="px-4 py-3">{formatMinutes(rec.worked_minutes)}</td>
@@ -156,7 +156,7 @@ export default function AttendanceListPage() {
                 ))}
                 {data.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-4 py-8 text-center text-sm text-gray-400">No se encontraron registros.</td>
+                      <td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-400">No se encontraron registros.</td>
                   </tr>
                 )}
               </tbody>
