@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router';
 import { employees, shiftAssignments, scheduleExceptions } from '@/api/endpoints';
-import type { Employee, ShiftAssignment, ScheduleException } from '@/types/api';
+import type { Employee, ShiftAssignment, ScheduleException, PaginationMeta } from '@/types/api';
 import { useAuth } from '@/context/useAuth';
 import { sileo } from 'sileo';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { SkeletonDetail } from '@/components/ui/Skeleton';
+import Pagination from '@/components/ui/Pagination';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { employeeDetailSteps, employeeDetailAdminSteps } from '@/data/pageTutorials';
-import { HiOutlineTrash } from 'react-icons/hi2';
+import { HiOutlineTrash, HiOutlinePencilSquare, HiOutlinePlusCircle, HiOutlineXMark } from 'react-icons/hi2';
+import { INPUT_BASE } from '@/constants/ui';
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
@@ -17,8 +19,20 @@ export default function EmployeeDetailPage() {
   const { isSuperadmin } = useAuth();
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
-  const [exceptions, setExceptions] = useState<ScheduleException[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Exceptions
+  const [exceptions, setExceptions] = useState<ScheduleException[]>([]);
+  const [excMeta, setExcMeta] = useState<PaginationMeta | null>(null);
+  const [excPage, setExcPage] = useState(1);
+  const [excLoading, setExcLoading] = useState(false);
+
+  // Exception modal
+  const [showModal, setShowModal] = useState(false);
+  const [formDate, setFormDate] = useState('');
+  const [formIsWorkingDay, setFormIsWorkingDay] = useState(false);
+  const [formReason, setFormReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -26,16 +40,60 @@ export default function EmployeeDetailPage() {
     Promise.all([
       employees.get(empId),
       shiftAssignments.listByEmployee(empId),
-      scheduleExceptions.listByEmployee(empId),
     ])
-      .then(([empRes, assignRes, excRes]) => {
+      .then(([empRes, assignRes]) => {
         setEmployee(empRes.data);
         setAssignments(assignRes.data);
-        setExceptions(excRes.data);
       })
       .catch(() => sileo.error({ title: 'Error al cargar empleado' }))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const fetchExceptions = useCallback(() => {
+    if (!id) return;
+    setExcLoading(true);
+    scheduleExceptions.listByEmployee(Number(id), { page: excPage, per_page: 10 })
+      .then((res) => { setExceptions(res.data); setExcMeta(res.meta); })
+      .catch(() => sileo.error({ title: 'Error al cargar excepciones' }))
+      .finally(() => setExcLoading(false));
+  }, [id, excPage]);
+
+  useEffect(() => { fetchExceptions(); }, [fetchExceptions]);
+
+  const resetForm = () => { setFormDate(''); setFormIsWorkingDay(false); setFormReason(''); };
+
+  const handleCreateException = async () => {
+    if (!formDate) { sileo.error({ title: 'La fecha es requerida' }); return; }
+    setSubmitting(true);
+    try {
+      await scheduleExceptions.create({
+        employee_id: Number(id),
+        date: formDate,
+        is_working_day: formIsWorkingDay,
+        reason: formReason || undefined,
+      });
+      sileo.success({ title: 'Excepción creada' });
+      setShowModal(false);
+      resetForm();
+      setExcPage(1);
+      fetchExceptions();
+    } catch {
+      sileo.error({ title: 'Error al crear excepción' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteException = async (exId: number) => {
+    if (!confirm('¿Eliminar esta excepción de horario?')) return;
+    try {
+      await scheduleExceptions.delete(exId);
+      setExceptions((prev) => prev.filter((e) => e.id !== exId));
+      sileo.success({ title: 'Excepción eliminada' });
+    } catch {
+      sileo.error({ title: 'Error al eliminar excepción' });
+    }
+  };
 
   const handleUnassign = async (assignmentId: number) => {
     const target = assignments.find((a) => a.id === assignmentId);
@@ -101,7 +159,8 @@ export default function EmployeeDetailPage() {
           </div>
         )}
 
-        <div className="rounded-xl bg-grafito p-6 shadow-sm">
+        <div className="lg:col-span-2 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-xl bg-grafito p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">Asignaciones de turno</h3>
             {isSuperadmin && (
@@ -125,14 +184,23 @@ export default function EmployeeDetailPage() {
                       <td className="py-2">{a.work_days.map((d) => DAY_NAMES[d]).join(', ')}</td>
                       {isSuperadmin && (
                         <td className="py-2">
-                          <button
-                            type="button"
-                            className="rounded-md p-1.5 text-gray-400 transition hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
-                            title="Desasignar turno"
-                            onClick={() => handleUnassign(a.id)}
-                          >
-                            <HiOutlineTrash className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <Link
+                              to={`/employees/${employee.id}/shifts/${a.id}/edit`}
+                              className="rounded-md p-1.5 text-gray-400 transition hover:bg-radar/10 hover:text-radar"
+                              title="Editar turno"
+                            >
+                              <HiOutlinePencilSquare className="h-4 w-4" />
+                            </Link>
+                            <button
+                              type="button"
+                              className="rounded-md p-1.5 text-gray-400 transition hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
+                              title="Desasignar turno"
+                              onClick={() => handleUnassign(a.id)}
+                            >
+                              <HiOutlineTrash className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -143,38 +211,129 @@ export default function EmployeeDetailPage() {
           )}
         </div>
 
-        <div className="rounded-xl bg-grafito p-6 shadow-sm lg:col-span-2">
-          <h3 className="mb-4 text-lg font-semibold text-white">Excepciones de horario</h3>
-          {exceptions.length === 0 ? (
+          <div className="rounded-xl bg-grafito p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">Excepciones de horario</h3>
+            {isSuperadmin && (
+              <button
+                type="button"
+                className="flex items-center gap-1.5 rounded-lg bg-radar px-3 py-1.5 text-xs font-semibold text-white hover:bg-radar-dark cursor-pointer"
+                onClick={() => { resetForm(); setShowModal(true); }}
+              >
+                <HiOutlinePlusCircle className="h-4 w-4" /> Nueva excepción
+              </button>
+            )}
+          </div>
+          {excLoading ? (
+            <p className="text-sm text-gray-400">Cargando...</p>
+          ) : exceptions.length === 0 ? (
             <p className="text-sm text-gray-400">Sin excepciones.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
-                  <tr><th className="pb-2">Fecha</th><th className="pb-2">Tipo</th><th className="pb-2">Turno</th><th className="pb-2">Motivo</th></tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {exceptions.map((ex) => (
-                    <tr key={ex.id}>
-                      <td className="py-2">{ex.date}</td>
-                      <td className="py-2"><StatusBadge status={ex.is_working_day ? 'present' : 'rest'} /></td>
-                      <td className="py-2">{ex.shift?.name ?? '—'}</td>
-                      <td className="py-2">{ex.reason ?? '—'}</td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
+                    <tr>
+                      <th className="pb-2">Fecha</th>
+                      <th className="pb-2">Tipo</th>
+                      <th className="pb-2">Turno</th>
+                      <th className="pb-2">Motivo</th>
+                      {isSuperadmin && <th className="pb-2"></th>}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {exceptions.map((ex) => (
+                      <tr key={ex.id}>
+                        <td className="py-2">{ex.date}</td>
+                        <td className="py-2"><StatusBadge status={ex.is_working_day ? 'present' : 'rest'} /></td>
+                        <td className="py-2">{ex.shift?.name ?? '—'}</td>
+                        <td className="py-2">{ex.reason ?? '—'}</td>
+                        {isSuperadmin && (
+                          <td className="py-2">
+                            <button
+                              type="button"
+                              className="rounded-md p-1.5 text-gray-400 transition hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
+                              title="Eliminar excepción"
+                              onClick={() => handleDeleteException(ex.id)}
+                            >
+                              <HiOutlineTrash className="h-4 w-4" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {excMeta && <Pagination meta={excMeta} onPageChange={(p) => setExcPage(p)} />}
+            </>
           )}
+        </div>
         </div>
       </div>
 
       <div className="mt-6 rounded-xl bg-grafito p-6 shadow-sm">
         <h3 className="mb-2 text-lg font-semibold text-white">Asistencia reciente</h3>
-        <Link to={`/attendance?employee_id=${employee.id}`} className="text-sm font-medium text-radar hover:underline">
+        <Link to={`/attendance?employee_internal_id=${employee.internal_id}`} className="text-sm font-medium text-radar hover:underline">
           Ver asistencia completa →
         </Link>
       </div>
+
+      {/* Create exception modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-grafito p-6 shadow-lg">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">Nueva excepción de horario</h3>
+              <button type="button" className="text-gray-400 hover:text-white cursor-pointer" onClick={() => setShowModal(false)}>
+                <HiOutlineXMark className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-300">Fecha</label>
+                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className={`w-full ${INPUT_BASE}`} />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                  <input type="checkbox" checked={formIsWorkingDay} onChange={(e) => setFormIsWorkingDay(e.target.checked)} className="rounded" />
+                  Es día laborable
+                </label>
+                <span className="mt-1 block text-xs text-gray-400">
+                  {formIsWorkingDay ? 'El empleado debe trabajar este día (ej: día extra)' : 'El empleado no trabaja este día (ej: permiso, feriado)'}
+                </span>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-300">Motivo (opcional)</label>
+                <textarea
+                  rows={2}
+                  value={formReason}
+                  onChange={(e) => setFormReason(e.target.value)}
+                  className={`w-full ${INPUT_BASE}`}
+                  placeholder="Ej: Permiso personal, feriado empresa..."
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-grafito-lighter cursor-pointer"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark disabled:opacity-50 cursor-pointer"
+                  disabled={submitting}
+                  onClick={handleCreateException}
+                >
+                  {submitting ? 'Creando...' : 'Crear excepción'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

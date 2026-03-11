@@ -10,7 +10,6 @@ import {
   HiOutlineCog6Tooth,
   HiOutlineArrowRightOnRectangle,
   HiOutlineUserGroup,
-  HiOutlineCalendarDays,
 } from 'react-icons/hi2';
 
 const navItems = [
@@ -19,7 +18,6 @@ const navItems = [
   { to: '/shifts', label: 'Turnos', icon: HiOutlineClock, end: true },
   { to: '/shifts/assign', label: 'Asignar turnos', icon: HiOutlineUserGroup },
   { to: '/attendance', label: 'Asistencia', icon: HiOutlineClipboardDocumentCheck },
-  { to: '/schedule-exceptions', label: 'Excepciones', icon: HiOutlineCalendarDays },
   { to: '/import', label: 'Importar CSV', icon: HiOutlineArrowUpTray },
 ];
 

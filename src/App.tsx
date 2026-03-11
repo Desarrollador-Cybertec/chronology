@@ -10,6 +10,7 @@ import EmployeeListPage from '@/pages/employees/EmployeeListPage';
 import EmployeeDetailPage from '@/pages/employees/EmployeeDetailPage';
 import EmployeeEditPage from '@/pages/employees/EmployeeEditPage';
 import AssignShiftPage from '@/pages/employees/AssignShiftPage';
+import ShiftAssignmentEditPage from '@/pages/employees/ShiftAssignmentEditPage';
 import ShiftListPage from '@/pages/shifts/ShiftListPage';
 import ShiftAssignmentPage from '@/pages/shifts/ShiftAssignmentPage';
 import ShiftFormPage from '@/pages/shifts/ShiftFormPage';
@@ -19,7 +20,6 @@ import AttendanceDetailPage from '@/pages/attendance/AttendanceDetailPage';
 import AttendanceEditPage from '@/pages/attendance/AttendanceEditPage';
 import ImportPage from '@/pages/import/ImportPage';
 import ImportDetailPage from '@/pages/import/ImportDetailPage';
-import ScheduleExceptionsPage from '@/pages/schedule-exceptions/ScheduleExceptionsPage';
 import SettingsPage from '@/pages/settings/SettingsPage';
 
 function App() {
@@ -55,13 +55,11 @@ function App() {
               <Route path="/import" element={<ImportPage />} />
               <Route path="/import/:id" element={<ImportDetailPage />} />
 
-              {/* Schedule Exceptions */}
-              <Route path="/schedule-exceptions" element={<ScheduleExceptionsPage />} />
-
               {/* Superadmin routes */}
               <Route element={<SuperadminRoute />}>
                 <Route path="/employees/:id/edit" element={<EmployeeEditPage />} />
                 <Route path="/employees/:employeeId/assign-shift" element={<AssignShiftPage />} />
+                <Route path="/employees/:employeeId/shifts/:assignmentId/edit" element={<ShiftAssignmentEditPage />} />
                 <Route path="/shifts/create" element={<ShiftFormPage />} />
                 <Route path="/shifts/:id/edit" element={<ShiftEditPage />} />
                 <Route path="/attendance/:id/edit" element={<AttendanceEditPage />} />

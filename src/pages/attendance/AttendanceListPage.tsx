@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { attendance } from '@/api/endpoints';
+import { attendance, employees as employeesApi } from '@/api/endpoints';
 import type { AttendanceRecord, PaginationMeta } from '@/types/api';
 import Pagination from '@/components/ui/Pagination';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -28,10 +28,24 @@ export default function AttendanceListPage() {
   const [sortKey, setSortKey] = useState<string>('date_reference');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  const [employeeId, setEmployeeId] = useState(searchParams.get('employee_id') ?? '');
+  // Input state — bound to the filter fields (not used for fetching directly)
+  const initialInternalId = searchParams.get('employee_internal_id') ?? '';
+  const [employeeSearch, setEmployeeSearch] = useState(initialInternalId);
   const [dateFrom, setDateFrom] = useState(searchParams.get('date_from') ?? '');
   const [dateTo, setDateTo] = useState(searchParams.get('date_to') ?? '');
   const [status, setStatus] = useState(searchParams.get('status') ?? '');
+
+  // True while we're resolving the initial employee_internal_id from the URL
+  const [initializing, setInitializing] = useState(Boolean(initialInternalId));
+
+  // Committed state — holds resolved database IDs; only updated on "Filtrar"
+  const [committed, setCommitted] = useState({
+    employeeId: '',
+    dateFrom: searchParams.get('date_from') ?? '',
+    dateTo: searchParams.get('date_to') ?? '',
+    status: searchParams.get('status') ?? '',
+  });
+
   const [page, _setPage] = useState(Number(searchParams.get('page') ?? 1));
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
@@ -44,10 +58,10 @@ export default function AttendanceListPage() {
 
   const fetchData = useCallback(() => {
     const params: Record<string, string | number> = { page, per_page: 15 };
-    if (employeeId) params.employee_id = employeeId;
-    if (dateFrom) params.date_from = dateFrom;
-    if (dateTo) params.date_to = dateTo;
-    if (status) params.status = status;
+    if (committed.employeeId) params.employee_id = committed.employeeId;
+    if (committed.dateFrom) params.date_from = committed.dateFrom;
+    if (committed.dateTo) params.date_to = committed.dateTo;
+    if (committed.status) params.status = committed.status;
     if (sortKey) params.sort_by = sortKey;
     if (sortDir) params.order = sortDir;
 
@@ -55,15 +69,50 @@ export default function AttendanceListPage() {
       .then((res) => { setData(res.data); setMeta(res.meta); })
       .catch(() => sileo.error({ title: 'Error al cargar asistencia' }))
       .finally(() => setLoading(false));
-  }, [page, employeeId, dateFrom, dateTo, status, sortKey, sortDir]);
+  }, [page, committed, sortKey, sortDir]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  // Resolve initial employee_internal_id from the URL on first mount
+  useEffect(() => {
+    if (!initialInternalId) return;
+    employeesApi.list(1, initialInternalId)
+      .then(res => {
+        const match = res.data.find(e => e.internal_id === initialInternalId);
+        if (match) {
+          setCommitted(prev => ({ ...prev, employeeId: String(match.id) }));
+        } else {
+          sileo.error({ title: `No se encontró empleado con ID interno "${initialInternalId}"` });
+          setLoading(false);
+        }
+      })
+      .catch(() => setLoading(false))
+      .finally(() => setInitializing(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const applyFilters = () => {
+  useEffect(() => {
+    if (!initializing) fetchData();
+  }, [fetchData, initializing]);
+
+  const applyFilters = async () => {
+    let resolvedDbId = '';
+    if (employeeSearch) {
+      try {
+        const res = await employeesApi.list(1, employeeSearch);
+        const match = res.data.find(e => e.internal_id === employeeSearch);
+        if (!match) {
+          sileo.error({ title: `No se encontró empleado con ID interno "${employeeSearch}"` });
+          return;
+        }
+        resolvedDbId = String(match.id);
+      } catch {
+        sileo.error({ title: 'Error al buscar empleado' });
+        return;
+      }
+    }
     setLoading(true);
-    setPage(1);
+    _setPage(1);
+    setCommitted({ employeeId: resolvedDbId, dateFrom, dateTo, status });
     const params = new URLSearchParams();
-    if (employeeId) params.set('employee_id', employeeId);
+    if (employeeSearch) params.set('employee_internal_id', employeeSearch);
     if (dateFrom) params.set('date_from', dateFrom);
     if (dateTo) params.set('date_to', dateTo);
     if (status) params.set('status', status);
@@ -81,17 +130,25 @@ export default function AttendanceListPage() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
-        <input type="number" placeholder="ID empleado" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={`${INPUT_BASE} w-32`} />
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={INPUT_BASE} />
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={INPUT_BASE} />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className={INPUT_BASE}>
-          <option value="">Todos los estados</option>
-          <option value="present">Presente</option>
-          <option value="absent">Ausente</option>
-          <option value="incomplete">Incompleto</option>
-          <option value="rest">Descanso</option>
-          <option value="holiday">Feriado</option>
-        </select>
+        <div className="w-32">
+          <input type="text" placeholder="ID interno" value={employeeSearch} onChange={(e) => setEmployeeSearch(e.target.value)} className={INPUT_BASE} />
+        </div>
+        <div className="w-40">
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={INPUT_BASE} />
+        </div>
+        <div className="w-40">
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={INPUT_BASE} />
+        </div>
+        <div className="w-44">
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className={INPUT_BASE}>
+            <option value="">Todos los estados</option>
+            <option value="present">Presente</option>
+            <option value="absent">Ausente</option>
+            <option value="incomplete">Incompleto</option>
+            <option value="rest">Descanso</option>
+            <option value="holiday">Feriado</option>
+          </select>
+        </div>
         <button className="flex items-center gap-1.5 rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark cursor-pointer" onClick={applyFilters}><HiOutlineFunnel className="h-4 w-4" /> Filtrar</button>
       </div>
 
