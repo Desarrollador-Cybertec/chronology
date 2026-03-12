@@ -54,17 +54,17 @@ export const managerSteps = [
   },
   {
     title: 'Lista de turnos',
-    description: 'En "Turnos" se listan todos los turnos configurados con: nombre, horario de entrada/salida (indica "nocturno" si cruza medianoche), tolerancia en minutos, duración de almuerzo, si tiene horas extra habilitadas y estado activo/inactivo.',
+    description: 'En "Turnos" se listan todos los turnos configurados con: nombre, horario de entrada/salida (indica "nocturno" si cruza medianoche), tolerancia en minutos, bloques de descanso (cantidad y duración), si tiene horas extra habilitadas y estado activo/inactivo.',
     icon: icon(HiOutlineClock),
   },
   {
     title: 'Buscar asistencia con filtros',
-    description: 'La página "Asistencia" tiene una barra de filtros arriba: puedes filtrar por ID de empleado, rango de fechas (desde-hasta) y estado (presente, ausente, incompleto, descanso, feriado). Haz clic en "Filtrar" para aplicar. Los filtros se reflejan en la URL para compartir búsquedas.',
+    description: 'La página "Asistencia" tiene una barra de filtros arriba: selecciona un empleado del listado desplegable, elige un rango de fechas (desde-hasta) y un estado (presente, ausente, incompleto, descanso, feriado). Haz clic en "Filtrar" para aplicar. Los filtros se reflejan en la URL para compartir búsquedas.',
     icon: icon(HiOutlineFunnel),
   },
   {
     title: 'Tabla de asistencia',
-    description: 'Cada registro de asistencia muestra: fecha, nombre del empleado (enlace a su perfil), turno asignado, hora de entrada y salida, minutos trabajados, tardanza (en rojo), horas extra (en verde), estado con badge y un ícono ✎ si fue editado manualmente. Haz clic en "Ver" para el desglose completo.',
+    description: 'Cada registro de asistencia muestra: fecha, nombre del empleado (enlace a su perfil), hora de entrada y salida, minutos trabajados, tardanza (en rojo), horas extra (en verde), estado con badge y un ícono ✎ si fue editado manualmente. Haz clic en "Ver" para el desglose completo.',
     icon: icon(HiOutlineTableCells),
   },
   {
@@ -123,7 +123,7 @@ export const adminSteps = [
   },
   {
     title: 'Crear y configurar turnos',
-    description: 'En "Turnos" haz clic en "Nuevo turno". Completa: nombre, hora de entrada/salida, tolerancia (min), si cruza medianoche, si requiere almuerzo (con inicio, fin y duración), si tiene horas extra habilitadas (bloque mínimo y máximo diario) y si está activo. Usa "Editar" en turnos existentes para modificar la configuración.',
+    description: 'En "Turnos" haz clic en "Nuevo turno". Completa: nombre, hora de entrada/salida, tolerancia (min), si cruza medianoche, bloques de descanso (tipo, inicio, fin — puedes agregar múltiples), si tiene horas extra habilitadas (bloque mínimo y máximo diario) y si está activo. Usa "Editar" en turnos existentes para modificar la configuración.',
     icon: icon(HiOutlineClock),
   },
   {
@@ -133,7 +133,7 @@ export const adminSteps = [
   },
   {
     title: 'Filtros avanzados de asistencia',
-    description: 'En la página "Asistencia" usa la barra de filtros: ingresa el ID del empleado, selecciona un rango de fechas con los campos "desde" y "hasta", elige un estado específico (presente, ausente, incompleto, descanso, feriado) y haz clic en "Filtrar". Los filtros se guardan en la URL para que puedas compartir la búsqueda.',
+    description: 'En la página "Asistencia" usa la barra de filtros: selecciona un empleado del listado desplegable, elige un rango de fechas con los campos "desde" y "hasta", selecciona un estado específico (presente, ausente, incompleto, descanso, feriado) y haz clic en "Filtrar". Los filtros se guardan en la URL para que puedas compartir la búsqueda.',
     icon: icon(HiOutlineFunnel),
   },
   {
@@ -153,7 +153,7 @@ export const adminSteps = [
   },
   {
     title: 'Configuración del sistema',
-    description: 'En "Configuración" ajusta 7 parámetros globales: ventana de ruido (para filtrar marcajes duplicados cercanos), auto-asignación de turno (habilitar/deshabilitar), tolerancia de auto-asignación, margen de almuerzo (para detectar marcajes de almuerzo), inicio del período diurno, inicio del nocturno y meses de retención de datos históricos.',
+    description: 'En "Configuración" ajusta los parámetros globales: ventana de ruido (para filtrar marcajes duplicados cercanos), auto-asignación de turno (habilitar/deshabilitar), tolerancia y regularidad de auto-asignación, inicio del período diurno, inicio del nocturno y meses de retención de datos históricos.',
     icon: icon(HiOutlineCog6Tooth),
   },
 ];

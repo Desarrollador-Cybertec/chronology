@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { attendance, employees as employeesApi } from '@/api/endpoints';
-import type { AttendanceRecord, PaginationMeta } from '@/types/api';
+import type { AttendanceRecord, Employee, PaginationMeta } from '@/types/api';
 import Pagination from '@/components/ui/Pagination';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { useAuth } from '@/context/useAuth';
@@ -28,15 +28,18 @@ export default function AttendanceListPage() {
   const [sortKey, setSortKey] = useState<string>('date_reference');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
+  // Employee options for the select
+  const [employeeOptions, setEmployeeOptions] = useState<Employee[]>([]);
+
   // Input state — bound to the filter fields (not used for fetching directly)
   const initialInternalId = searchParams.get('employee_internal_id') ?? '';
-  const [employeeSearch, setEmployeeSearch] = useState(initialInternalId);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [dateFrom, setDateFrom] = useState(searchParams.get('date_from') ?? '');
   const [dateTo, setDateTo] = useState(searchParams.get('date_to') ?? '');
   const [status, setStatus] = useState(searchParams.get('status') ?? '');
 
   // True while we're resolving the initial employee_internal_id from the URL
-  const [initializing, setInitializing] = useState(Boolean(initialInternalId));
+  const [initializing, setInitializing] = useState(true);
 
   // Committed state — holds resolved database IDs; only updated on "Filtrar"
   const [committed, setCommitted] = useState({
@@ -71,20 +74,22 @@ export default function AttendanceListPage() {
       .finally(() => setLoading(false));
   }, [page, committed, sortKey, sortDir]);
 
-  // Resolve initial employee_internal_id from the URL on first mount
+  // Fetch employee options and resolve initial filter on first mount
   useEffect(() => {
-    if (!initialInternalId) return;
-    employeesApi.list(1, initialInternalId)
+    employeesApi.list(1, undefined, 'internal_id', 'asc', 1000)
       .then(res => {
-        const match = res.data.find(e => e.internal_id === initialInternalId);
-        if (match) {
-          setCommitted(prev => ({ ...prev, employeeId: String(match.id) }));
-        } else {
-          sileo.error({ title: `No se encontró empleado con ID interno "${initialInternalId}"` });
-          setLoading(false);
+        setEmployeeOptions(res.data);
+        if (initialInternalId) {
+          const match = res.data.find(e => e.internal_id === initialInternalId);
+          if (match) {
+            setSelectedEmployeeId(String(match.id));
+            setCommitted(prev => ({ ...prev, employeeId: String(match.id) }));
+          } else {
+            sileo.error({ title: `No se encontró empleado con ID interno "${initialInternalId}"` });
+          }
         }
       })
-      .catch(() => setLoading(false))
+      .catch(() => sileo.error({ title: 'Error al cargar empleados' }))
       .finally(() => setInitializing(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -92,27 +97,15 @@ export default function AttendanceListPage() {
     if (!initializing) fetchData();
   }, [fetchData, initializing]);
 
-  const applyFilters = async () => {
-    let resolvedDbId = '';
-    if (employeeSearch) {
-      try {
-        const res = await employeesApi.list(1, employeeSearch);
-        const match = res.data.find(e => e.internal_id === employeeSearch);
-        if (!match) {
-          sileo.error({ title: `No se encontró empleado con ID interno "${employeeSearch}"` });
-          return;
-        }
-        resolvedDbId = String(match.id);
-      } catch {
-        sileo.error({ title: 'Error al buscar empleado' });
-        return;
-      }
-    }
+  const applyFilters = () => {
     setLoading(true);
     _setPage(1);
-    setCommitted({ employeeId: resolvedDbId, dateFrom, dateTo, status });
+    setCommitted({ employeeId: selectedEmployeeId, dateFrom, dateTo, status });
     const params = new URLSearchParams();
-    if (employeeSearch) params.set('employee_internal_id', employeeSearch);
+    if (selectedEmployeeId) {
+      const emp = employeeOptions.find(e => String(e.id) === selectedEmployeeId);
+      if (emp) params.set('employee_internal_id', emp.internal_id);
+    }
     if (dateFrom) params.set('date_from', dateFrom);
     if (dateTo) params.set('date_to', dateTo);
     if (status) params.set('status', status);
@@ -130,8 +123,13 @@ export default function AttendanceListPage() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
-        <div className="w-32">
-          <input type="text" placeholder="ID interno" value={employeeSearch} onChange={(e) => setEmployeeSearch(e.target.value)} className={INPUT_BASE} />
+        <div className="w-52">
+          <select value={selectedEmployeeId} onChange={(e) => setSelectedEmployeeId(e.target.value)} className={INPUT_BASE}>
+            <option value="">Todos los empleados</option>
+            {employeeOptions.map((emp) => (
+              <option key={emp.id} value={String(emp.id)}>{emp.internal_id} — {emp.first_name} {emp.last_name}</option>
+            ))}
+          </select>
         </div>
         <div className="w-40">
           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={INPUT_BASE} />

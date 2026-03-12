@@ -32,7 +32,6 @@ export default function SettingsPage() {
           auto_assign_shift: (values.auto_assign_shift ?? 'true') as 'true' | 'false',
             auto_assign_tolerance_minutes: Number(values.auto_assign_tolerance_minutes ?? 30),
             auto_assign_regularity_percent: Number(values.auto_assign_regularity_percent ?? 70),
-          lunch_margin_minutes: Number(values.lunch_margin_minutes ?? 15),
           diurnal_start_time: values.diurnal_start_time ?? '06:00',
           nocturnal_start_time: values.nocturnal_start_time ?? '20:00',
           data_retention_months: Number(values.data_retention_months ?? 24),
@@ -108,12 +107,6 @@ export default function SettingsPage() {
                   <span className="mt-1 block text-xs text-gray-400">% mínimo de días que deben coincidir por semana</span>
                   {errors.auto_assign_regularity_percent && <span className="mt-1 block text-xs text-red-500">{errors.auto_assign_regularity_percent.message}</span>}
                 </div>
-
-                <div>                <label htmlFor="lunch_margin_minutes" className="mb-1 block text-sm font-medium text-gray-300">Margen almuerzo (min)</label>
-                <input id="lunch_margin_minutes" type="number" {...register('lunch_margin_minutes')} className={INPUT_BASE} />
-                <span className="mt-1 block text-xs text-gray-400">Margen para detectar marcajes de almuerzo</span>
-                {errors.lunch_margin_minutes && <span className="mt-1 block text-xs text-red-500">{errors.lunch_margin_minutes.message}</span>}
-              </div>
 
               <div>
                 <label htmlFor="diurnal_start_time" className="mb-1 block text-sm font-medium text-gray-300">Inicio período diurno</label>

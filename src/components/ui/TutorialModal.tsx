@@ -24,7 +24,7 @@ export default function TutorialModal({ steps, buttonLabel = 'Tutorial' }: Tutor
     <>
       <button
         onClick={() => { setOpen(true); setCurrent(0); }}
-        className="flex items-center gap-1.5 rounded-lg border border-radar/30 bg-radar/10 px-3 py-1.5 text-sm font-medium text-radar hover:bg-radar/20 transition cursor-pointer"
+        className="flex items-center gap-1.5 rounded-lg bg-radar px-3 py-1.5 text-sm font-semibold text-white hover:bg-radar-dark shadow transition cursor-pointer"
       >
         <HiOutlineQuestionMarkCircle className="h-4 w-4" />
         {buttonLabel}

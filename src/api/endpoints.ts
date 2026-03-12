@@ -27,8 +27,8 @@ export const auth = {
 
 // ── Employees ──
 export const employees = {
-    list: (page = 1, search?: string, sortBy?: string, order?: 'asc' | 'desc') => {
-        const qs = buildQueryString({ page, search, sort_by: sortBy, order });
+    list: (page = 1, search?: string, sortBy?: string, order?: 'asc' | 'desc', perPage?: number) => {
+        const qs = buildQueryString({ page, search, sort_by: sortBy, order, per_page: perPage });
         return api.get<PaginatedResponse<Employee>>(`/employees?${qs}`);
     },
     get: (id: number) =>

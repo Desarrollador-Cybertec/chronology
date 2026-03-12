@@ -25,6 +25,8 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         sileo.error({ title: 'Credenciales inválidas' });
+      } else if (err instanceof ApiError && err.status === 409) {
+        sileo.error({ title: 'Sesión activa', description: (err.body as { message?: string }).message ?? 'Este usuario ya tiene una sesión activa.' });
       } else {
         sileo.error({ title: 'Error al iniciar sesión' });
       }

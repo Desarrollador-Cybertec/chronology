@@ -171,7 +171,7 @@ export const shiftAssignmentPageAdminSteps = [
 export const shiftListSteps = [
   {
     title: 'Tabla de turnos',
-    description: 'Cada turno muestra: nombre, horario de entrada/salida (con indicador "nocturno" si cruza medianoche), tolerancia en minutos, duración de almuerzo (o "No"), si tiene horas extra y su estado.',
+    description: 'Cada turno muestra: nombre, horario de entrada/salida (con indicador "nocturno" si cruza medianoche), tolerancia en minutos, bloques de descanso (cantidad y duración total, o "No" si no hay), si tiene horas extra y su estado.',
     icon: icon(HiOutlineTableCells),
   },
 ];
@@ -180,7 +180,7 @@ export const shiftListAdminSteps = [
   ...shiftListSteps,
   {
     title: 'Crear nuevo turno',
-    description: 'Haz clic en "Nuevo turno" (arriba a la derecha) para configurar un turno con todos sus parámetros: horarios, tolerancia, almuerzo y reglas de horas extra.',
+    description: 'Haz clic en "Nuevo turno" (arriba a la derecha) para configurar un turno con todos sus parámetros: horarios, tolerancia, bloques de descanso y reglas de horas extra.',
     icon: icon(HiOutlinePlusCircle),
   },
   {
@@ -208,8 +208,8 @@ export const shiftFormSteps = [
     icon: icon(HiOutlineAdjustmentsHorizontal),
   },
   {
-    title: 'Almuerzo',
-    description: 'Marca "Requiere almuerzo" para habilitar los campos de hora de inicio, hora de fin y duración del almuerzo. Los marcajes dentro de ese rango se detectan automáticamente como almuerzo.',
+    title: 'Bloques de descanso',
+    description: 'Haz clic en "+ Agregar bloque" para añadir intervalos de descanso (almuerzo, merienda, etc.). Para cada bloque selecciona el tipo, hora de inicio y hora de fin. La duración se calcula automáticamente. Los marcajes dentro de esos rangos se detectan como descanso.',
     icon: icon(HiOutlineCalendarDays),
   },
   {
@@ -223,12 +223,12 @@ export const shiftFormSteps = [
 export const attendanceListSteps = [
   {
     title: 'Filtros de búsqueda',
-    description: 'Usa la barra de filtros arriba: ID de empleado, rango de fechas (desde-hasta) y estado (presente, ausente, incompleto, descanso, feriado). Haz clic en "Filtrar" para aplicar. Los filtros se guardan en la URL.',
+    description: 'Usa la barra de filtros arriba: selecciona un empleado del listado desplegable, elige un rango de fechas (desde-hasta) y un estado (presente, ausente, incompleto, descanso, feriado). Haz clic en "Filtrar" para aplicar. Los filtros se guardan en la URL.',
     icon: icon(HiOutlineFunnel),
   },
   {
     title: 'Columnas de la tabla',
-    description: 'Cada registro muestra: fecha, empleado (enlace al perfil), turno, hora de entrada/salida, minutos trabajados, tardanza (en rojo si > 0), horas extra (en verde si > 0), estado con badge de color y un ícono ✎ si fue editado manualmente.',
+    description: 'Cada registro muestra: fecha, empleado (enlace al perfil), hora de entrada/salida, minutos trabajados, tardanza (en rojo si > 0), horas extra (en verde si > 0), estado con badge de color y un ícono ✎ si fue editado manualmente.',
     icon: icon(HiOutlineTableCells),
   },
   {
@@ -346,12 +346,17 @@ export const settingsSteps = [
   },
   {
     title: 'Auto-asignación de turno',
-    description: 'Si está habilitado, el sistema asigna automáticamente un turno según la hora de entrada del empleado. La tolerancia define la ventana alrededor del inicio de cada turno para hacer match.',
+    description: 'Si está habilitado, el sistema asigna automáticamente un turno según la hora de entrada del empleado.',
     icon: icon(HiOutlineClock),
   },
   {
-    title: 'Almuerzo y horarios',
-    description: 'El margen de almuerzo define el rango para detectar marcajes de almuerzo. Los períodos diurno/nocturno separan las horas extra en diurnas y nocturnas para cálculos laborales.',
+    title: 'Tolerancia y regularidad',
+    description: 'La tolerancia de auto-asignación define la ventana en minutos alrededor del inicio del turno para hacer match. La regularidad indica el porcentaje mínimo de días que deben coincidir por semana para asignar el turno.',
+    icon: icon(HiOutlineAdjustmentsHorizontal),
+  },
+  {
+    title: 'Períodos diurno y nocturno',
+    description: 'Define las horas de inicio del período diurno y nocturno. Estos períodos separan las horas extra en diurnas y nocturnas para los cálculos laborales.',
     icon: icon(HiOutlineCalendarDays),
   },
   {
