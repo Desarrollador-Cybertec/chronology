@@ -10,6 +10,7 @@ import {
   HiOutlineCog6Tooth,
   HiOutlineArrowRightOnRectangle,
   HiOutlineUserGroup,
+  HiOutlineDocumentChartBar,
 } from 'react-icons/hi2';
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
   { to: '/shifts/assign', label: 'Asignar turnos', icon: HiOutlineUserGroup },
   { to: '/attendance', label: 'Asistencia', icon: HiOutlineClipboardDocumentCheck },
   { to: '/import', label: 'Importar CSV', icon: HiOutlineArrowUpTray },
+  { to: '/reports', label: 'Reportes', icon: HiOutlineDocumentChartBar },
 ];
 
 export default function AppLayout() {

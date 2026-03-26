@@ -12,7 +12,7 @@ import SortableHeader from '@/components/ui/SortableHeader';
 import AssignShiftForm from './AssignShiftForm';
 import type { AssignFormData } from './AssignShiftForm';
 import EmployeeAssignRow from './EmployeeAssignRow';
-import { HiOutlineUserGroup, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
+import { HiOutlineUserGroup, HiOutlineMagnifyingGlass, HiOutlineTrash } from 'react-icons/hi2';
 
 function getCurrentAssignment(assignments: ShiftAssignment[] | undefined) {
   if (!assignments?.length) return undefined;
@@ -36,6 +36,8 @@ export default function ShiftAssignmentPage() {
   const [assignmentMap, setAssignmentMap] = useState<Record<number, ShiftAssignment[]>>({});
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [assigning, setAssigning] = useState(false);
+  const [allMode, setAllMode] = useState(false);
+  const [bulkUnassigning, setBulkUnassigning] = useState(false);
   const { search, setSearch, debouncedValue: searchDebounced } = useDebouncedSearch(undefined, () => {
     setLoading(true);
     _setPage(1);
@@ -89,6 +91,7 @@ export default function ShiftAssignmentPage() {
   }, [fetchEmployeesWithAssignments]);
 
   const toggleEmployee = (id: number) => {
+    setAllMode(false);
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
@@ -97,6 +100,11 @@ export default function ShiftAssignmentPage() {
   };
 
   const toggleAll = () => {
+    if (allMode) {
+      setSelected(new Set());
+      setAllMode(false);
+      return;
+    }
     const activeIds = empList.filter((e) => e.is_active).map((e) => e.id);
     const allSelected = activeIds.every((id) => selected.has(id));
     setSelected((prev) => {
@@ -140,6 +148,7 @@ export default function ShiftAssignmentPage() {
 
     if (ok > 0) {
       setSelected(new Set());
+      setAllMode(false);
       setLoading(true);
       fetchEmployeesWithAssignments();
     }
@@ -160,6 +169,34 @@ export default function ShiftAssignmentPage() {
   const activeOnPage = empList.filter((e) => e.is_active).map((e) => e.id);
   const allPageSelected = activeOnPage.length > 0 && activeOnPage.every((id) => selected.has(id));
 
+  const selectAllEmployees = async () => {
+    try {
+      const res = await employeesApi.allIds({ active_only: true });
+      setSelected(new Set(res.data.map((e) => e.id)));
+      setAllMode(true);
+    } catch {
+      sileo.error({ title: 'Error al cargar todos los empleados' });
+    }
+  };
+
+  const handleBulkUnassign = async () => {
+    const ids = [...selected];
+    if (!confirm(`¿Desasignar turnos de ${ids.length} empleado${ids.length !== 1 ? 's' : ''}? Los registros de asistencia existentes no se verán afectados.`)) return;
+    setBulkUnassigning(true);
+    try {
+      const res = await shiftAssignments.bulkDelete(ids);
+      sileo.success({ title: res.message });
+      setSelected(new Set());
+      setAllMode(false);
+      setLoading(true);
+      fetchEmployeesWithAssignments();
+    } catch {
+      sileo.error({ title: 'Error al desasignar turnos' });
+    } finally {
+      setBulkUnassigning(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -177,6 +214,50 @@ export default function ShiftAssignmentPage() {
           assigning={assigning}
           onSubmit={onSubmit}
         />
+      )}
+
+      {isSuperadmin && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/8 bg-grafito px-5 py-3">
+          <div className="flex items-center gap-3">
+            {selected.size > 0 ? (
+              <span className="text-sm text-gray-300">
+                <span className="font-semibold text-white">{selected.size}</span> empleado{selected.size !== 1 ? 's' : ''} seleccionado{selected.size !== 1 ? 's' : ''}
+                {allMode && ' (todos los activos)'}
+              </span>
+            ) : (
+              <span className="text-sm text-gray-400">Ningún empleado seleccionado</span>
+            )}
+            {!allMode && (
+              <button
+                type="button"
+                onClick={selectAllEmployees}
+                className="rounded-lg border border-radar/30 bg-radar/10 px-4 py-1.5 text-sm font-medium text-radar transition hover:bg-radar/20 cursor-pointer"
+              >
+                Seleccionar todos ({meta?.total ?? '...'})
+              </button>
+            )}
+            {selected.size > 0 && (
+              <button
+                type="button"
+                onClick={() => { setSelected(new Set()); setAllMode(false); }}
+                className="text-sm text-gray-400 hover:text-white cursor-pointer"
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+          {selected.size > 0 && (
+            <button
+              type="button"
+              onClick={handleBulkUnassign}
+              disabled={bulkUnassigning}
+              className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-1.5 text-sm font-medium text-red-400 transition hover:bg-red-500/20 disabled:opacity-50 cursor-pointer"
+            >
+              <HiOutlineTrash className="h-4 w-4" />
+              {bulkUnassigning ? 'Desasignando...' : 'Desasignar turnos'}
+            </button>
+          )}
+        </div>
       )}
 
       <div className="mt-4">
@@ -203,7 +284,7 @@ export default function ShiftAssignmentPage() {
                     <th className="w-10 px-4 py-3">
                       <input
                         type="checkbox"
-                        checked={allPageSelected}
+                        checked={allMode || allPageSelected}
                         onChange={toggleAll}
                         className="h-4 w-4 rounded border-white/10 bg-grafito-light accent-radar cursor-pointer"
                       />
@@ -242,9 +323,9 @@ export default function ShiftAssignmentPage() {
             </table>
           </div>
           {meta && <Pagination meta={meta} onPageChange={setPage} />}
-          {selected.size > 0 && (
-            <p className="mt-3 text-sm text-gray-400">
-              {selected.size} empleado{selected.size !== 1 ? 's' : ''} seleccionado{selected.size !== 1 ? 's' : ''} en total (puede incluir otras páginas)
+          {selected.size > 0 && !allMode && selected.size > activeOnPage.length && (
+            <p className="mt-3 text-center text-sm text-gray-400">
+              Hay empleados seleccionados en otras páginas
             </p>
           )}
         </>

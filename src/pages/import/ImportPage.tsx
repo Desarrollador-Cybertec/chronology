@@ -83,7 +83,8 @@ export default function ImportPage() {
     try {
       const res = await imports.reprocess(id);
       sileo.success({ title: res.message });
-      fetchBatches();
+      const batchRes = await imports.get(id);
+      setProcessingBatch(batchRes.data);
     } catch {
       sileo.error({ title: 'Error al reprocesar' });
     }

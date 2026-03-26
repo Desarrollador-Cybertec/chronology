@@ -64,6 +64,12 @@ export interface Employee {
   attendance_summary?: AttendanceSummary;
 }
 
+export interface EmployeeSummary {
+  id: number;
+  internal_id: string;
+  full_name: string;
+}
+
 // ── Shifts ──
 export interface ShiftBreak {
   id: number;
@@ -157,6 +163,74 @@ export interface ImportBatch {
   failed_rows: number;
   errors: string[] | null;
   processed_at: string | null;
+}
+
+// ── Reports ──
+export type ReportType = 'individual' | 'general';
+export type ReportStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+export interface ReportSummaryIndividual {
+  employee_name: string;
+  employee_internal_id: string;
+  total_days: number;
+  days_present: number;
+  days_absent: number;
+  days_incomplete: number;
+  times_late: number;
+  total_late_minutes: number;
+  total_worked_minutes: number;
+  total_overtime_minutes: number;
+  total_overtime_diurnal_minutes: number;
+  total_overtime_nocturnal_minutes: number;
+  total_early_departure_minutes: number;
+}
+
+export interface ReportSummaryGeneral {
+  total_employees: number;
+  total_days: number;
+  days_present: number;
+  days_absent: number;
+  days_incomplete: number;
+  total_late_entries: number;
+  total_late_minutes: number;
+  total_worked_minutes: number;
+  total_overtime_minutes: number;
+  total_overtime_diurnal_minutes: number;
+  total_overtime_nocturnal_minutes: number;
+  total_early_departure_minutes: number;
+}
+
+export interface ReportRow {
+  employee_id?: number;
+  employee_name?: string;
+  employee_internal_id?: string;
+  date: string;
+  first_check_in: string | null;
+  last_check_out: string | null;
+  worked_minutes: number;
+  late_minutes: number;
+  early_departure_minutes: number;
+  overtime_minutes: number;
+  overtime_diurnal_minutes: number;
+  overtime_nocturnal_minutes: number;
+  status: string;
+}
+
+export interface Report {
+  id: number;
+  name: string;
+  generated_by: number;
+  employee_id: number | null;
+  type: ReportType;
+  date_from: string;
+  date_to: string;
+  status: ReportStatus;
+  summary: ReportSummaryIndividual | ReportSummaryGeneral | null;
+  rows: ReportRow[] | null;
+  error_message: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ── Settings ──

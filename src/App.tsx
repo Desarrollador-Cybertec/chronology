@@ -20,6 +20,8 @@ import AttendanceDetailPage from '@/pages/attendance/AttendanceDetailPage';
 import AttendanceEditPage from '@/pages/attendance/AttendanceEditPage';
 import ImportPage from '@/pages/import/ImportPage';
 import ImportDetailPage from '@/pages/import/ImportDetailPage';
+import ReportsPage from '@/pages/reports/ReportsPage';
+import ReportDetailPage from '@/pages/reports/ReportDetailPage';
 import SettingsPage from '@/pages/settings/SettingsPage';
 
 function App() {
@@ -54,6 +56,10 @@ function App() {
               {/* Import */}
               <Route path="/import" element={<ImportPage />} />
               <Route path="/import/:id" element={<ImportDetailPage />} />
+
+              {/* Reports */}
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/reports/:id" element={<ReportDetailPage />} />
 
               {/* Superadmin routes */}
               <Route element={<SuperadminRoute />}>

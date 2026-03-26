@@ -11,10 +11,12 @@ import { SkeletonForm } from '@/components/ui/Skeleton';
 import TutorialModal from '@/components/ui/TutorialModal';
 import { attendanceEditSteps } from '@/data/pageTutorials';
 import { INPUT_BASE } from '@/constants/ui';
+import { useDateBounds } from '@/hooks/useDateBounds';
 
 export default function AttendanceEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { minDate, maxDate } = useDateBounds();
   const [record, setRecord] = useState<AttendanceRecord | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -83,12 +85,12 @@ export default function AttendanceEditPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="first_check_in" className="mb-1 block text-sm font-medium text-gray-300">Hora de entrada</label>
-            <input id="first_check_in" type="datetime-local" {...register('first_check_in')} className={INPUT_BASE} />
+            <input id="first_check_in" type="datetime-local" {...register('first_check_in')} min={minDate ? `${minDate}T00:00` : undefined} max={maxDate ? `${maxDate}T23:59` : undefined} className={INPUT_BASE} />
           </div>
 
           <div>
             <label htmlFor="last_check_out" className="mb-1 block text-sm font-medium text-gray-300">Hora de salida</label>
-            <input id="last_check_out" type="datetime-local" {...register('last_check_out')} className={INPUT_BASE} />
+            <input id="last_check_out" type="datetime-local" {...register('last_check_out')} min={minDate ? `${minDate}T00:00` : undefined} max={maxDate ? `${maxDate}T23:59` : undefined} className={INPUT_BASE} />
           </div>
 
           <div>

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { Shift } from '@/types/api';
 import { INPUT_BASE, DAY_OPTIONS } from '@/constants/ui';
+import { useDateBounds } from '@/hooks/useDateBounds';
 
 const assignSchema = z.object({
   shift_id: z.coerce.number().min(1, 'Selecciona un turno'),
@@ -22,6 +23,7 @@ interface AssignShiftFormProps {
 }
 
 export default function AssignShiftForm({ shifts, selectedCount, assigning, onSubmit }: AssignShiftFormProps) {
+  const { minDate, maxDate } = useDateBounds();
   const {
     register,
     handleSubmit,
@@ -58,13 +60,13 @@ export default function AssignShiftForm({ shifts, selectedCount, assigning, onSu
 
         <div className="min-w-37.5">
           <label htmlFor="effective_date" className="mb-1 block text-xs font-medium text-gray-300">Fecha inicio</label>
-          <input id="effective_date" type="date" {...register('effective_date')} className={`${INPUT_BASE} ${errors.effective_date ? 'border-red-400' : ''}`} />
+          <input id="effective_date" type="date" {...register('effective_date')} min={minDate} max={maxDate} className={`${INPUT_BASE} ${errors.effective_date ? 'border-red-400' : ''}`} />
           {errors.effective_date && <span className="mt-1 block text-xs text-red-400">{errors.effective_date.message}</span>}
         </div>
 
         <div className="min-w-37.5">
           <label htmlFor="end_date" className="mb-1 block text-xs font-medium text-gray-300">Fecha fin (opc.)</label>
-          <input id="end_date" type="date" {...register('end_date')} className={INPUT_BASE} />
+          <input id="end_date" type="date" {...register('end_date')} min={minDate} max={maxDate} className={INPUT_BASE} />
         </div>
 
         <div>

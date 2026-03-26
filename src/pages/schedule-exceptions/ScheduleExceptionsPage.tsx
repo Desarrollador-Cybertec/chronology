@@ -13,9 +13,11 @@ import {
   HiOutlineXMark,
 } from 'react-icons/hi2';
 import { INPUT_BASE } from '@/constants/ui';
+import { useDateBounds } from '@/hooks/useDateBounds';
 
 export default function ScheduleExceptionsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { minDate, maxDate } = useDateBounds();
   const [data, setData] = useState<ScheduleException[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -263,7 +265,7 @@ export default function ScheduleExceptionsPage() {
               {/* Date */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-300">Fecha</label>
-                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className={`w-full ${INPUT_BASE}`} />
+                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} min={minDate} max={maxDate} className={`w-full ${INPUT_BASE}`} />
               </div>
 
               {/* Is working day */}

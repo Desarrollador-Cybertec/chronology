@@ -18,6 +18,7 @@ import TutorialModal from '@/components/ui/TutorialModal';
 import { attendanceListSteps, attendanceListAdminSteps } from '@/data/pageTutorials';
 import { INPUT_BASE } from '@/constants/ui';
 import { formatMinutes } from '@/utils/formatting';
+import { useDateBounds } from '@/hooks/useDateBounds';
 
 export default function AttendanceListPage() {
   const { isSuperadmin } = useAuth();
@@ -50,6 +51,7 @@ export default function AttendanceListPage() {
   });
 
   const [page, _setPage] = useState(Number(searchParams.get('page') ?? 1));
+  const { minDate, maxDate } = useDateBounds();
 
   const setPage = (p: number) => { setLoading(true); _setPage(p); };
 
@@ -132,10 +134,10 @@ export default function AttendanceListPage() {
           </select>
         </div>
         <div className="w-40">
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={INPUT_BASE} />
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} min={minDate} max={maxDate} className={INPUT_BASE} />
         </div>
         <div className="w-40">
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={INPUT_BASE} />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} min={minDate} max={maxDate} className={INPUT_BASE} />
         </div>
         <div className="w-44">
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={INPUT_BASE}>

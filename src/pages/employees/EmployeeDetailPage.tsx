@@ -11,12 +11,14 @@ import TutorialModal from '@/components/ui/TutorialModal';
 import { employeeDetailSteps, employeeDetailAdminSteps } from '@/data/pageTutorials';
 import { HiOutlineTrash, HiOutlinePencilSquare, HiOutlinePlusCircle, HiOutlineXMark } from 'react-icons/hi2';
 import { INPUT_BASE } from '@/constants/ui';
+import { useDateBounds } from '@/hooks/useDateBounds';
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { isSuperadmin } = useAuth();
+  const { minDate, maxDate } = useDateBounds();
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -292,7 +294,7 @@ export default function EmployeeDetailPage() {
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-300">Fecha</label>
-                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className={`w-full ${INPUT_BASE}`} />
+                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} min={minDate} max={maxDate} className={`w-full ${INPUT_BASE}`} />
               </div>
               <div>
                 <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">

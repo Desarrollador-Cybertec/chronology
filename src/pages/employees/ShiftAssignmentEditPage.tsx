@@ -8,6 +8,7 @@ import { sileo } from 'sileo';
 import { shiftAssignments, shifts as shiftsApi } from '@/api/endpoints';
 import type { Shift } from '@/types/api';
 import { INPUT_BASE } from '@/constants/ui';
+import { useDateBounds } from '@/hooks/useDateBounds';
 
 const DAY_OPTIONS = [
   { value: 1, label: 'Lunes' },
@@ -32,6 +33,7 @@ export default function ShiftAssignmentEditPage() {
   const navigate = useNavigate();
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
+  const { minDate, maxDate } = useDateBounds();
 
   const {
     register,
@@ -108,7 +110,7 @@ export default function ShiftAssignmentEditPage() {
 
           <div>
             <label htmlFor="end_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha fin (opcional)</label>
-            <input id="end_date" type="date" {...register('end_date')} className={INPUT_BASE} />
+            <input id="end_date" type="date" {...register('end_date')} min={minDate} max={maxDate} className={INPUT_BASE} />
           </div>
 
           <div className="sm:col-span-2">

@@ -5,12 +5,14 @@ import type {
     LoginResponse,
     RegisterResponse,
     Employee,
+    EmployeeSummary,
     Shift,
     ShiftBreak,
     ShiftAssignment,
     ScheduleException,
     AttendanceRecord,
     ImportBatch,
+    Report,
     SystemSetting,
     PaginatedResponse,
 } from '@/types/api';
@@ -37,6 +39,10 @@ export const employees = {
         api.put<{ data: Employee }>(`/employees/${id}`, data),
     toggleActive: (id: number) =>
         api.patch<{ message: string; is_active: boolean }>(`/employees/${id}/toggle-active`),
+    allIds: (params?: { search?: string; active_only?: boolean }) => {
+        const qs = buildQueryString({ search: params?.search, active_only: params?.active_only ? 1 : undefined });
+        return api.get<{ data: EmployeeSummary[]; total: number }>(`/employees/all-ids${qs ? `?${qs}` : ''}`);
+    },
 };
 
 // ── Shifts ──
@@ -67,6 +73,8 @@ export const shiftAssignments = {
         api.put<{ data: ShiftAssignment }>(`/employee-shifts/${id}`, data),
     delete: (id: number) =>
         api.delete<{ message: string }>(`/employee-shifts/${id}`),
+    bulkDelete: (employeeIds?: number[]) =>
+        api.delete<{ message: string; deleted_count: number }>('/employee-shifts', employeeIds ? { employee_ids: employeeIds } : undefined),
 };
 
 // ── Schedule Exceptions ──
@@ -118,6 +126,20 @@ export const imports = {
         api.get<{ data: ImportBatch }>(`/import/${id}`),
     reprocess: (id: number) =>
         api.post<{ message: string; deleted_attendance_days: number; groups_to_process: number }>(`/import/${id}/reprocess`),
+};
+
+// ── Reports ──
+export const reports = {
+    list: (params?: Record<string, string | number>) => {
+        const qs = buildQueryString(params ?? {});
+        return api.get<PaginatedResponse<Report>>(`/reports${qs ? `?${qs}` : ''}`);
+    },
+    create: (data: { type: string; employee_id?: number; date_from: string; date_to: string }) =>
+        api.post<{ data: Report }>('/reports', data),
+    get: (id: number, includeRows = true) =>
+        api.get<{ data: Report }>(`/reports/${id}${includeRows ? '' : '?include_rows=false'}`),
+    delete: (id: number) =>
+        api.delete<{ message: string }>(`/reports/${id}`),
 };
 
 // ── Settings ──

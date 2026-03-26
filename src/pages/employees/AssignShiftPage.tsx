@@ -8,6 +8,7 @@ import { shiftAssignments, shifts as shiftsApi } from '@/api/endpoints';
 import { shiftAssignmentSchema, type ShiftAssignmentFormData } from '@/schemas/assignments';
 import type { Shift } from '@/types/api';
 import TutorialModal from '@/components/ui/TutorialModal';
+import { useDateBounds } from '@/hooks/useDateBounds';
 import { assignShiftSteps } from '@/data/pageTutorials';
 import { INPUT_BASE } from '@/constants/ui';
 
@@ -25,6 +26,7 @@ export default function AssignShiftPage() {
   const { employeeId } = useParams<{ employeeId: string }>();
   const navigate = useNavigate();
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const { minDate, maxDate } = useDateBounds();
 
   const {
     register,
@@ -90,13 +92,13 @@ export default function AssignShiftPage() {
 
           <div>
             <label htmlFor="effective_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha de inicio</label>
-            <input id="effective_date" type="date" {...register('effective_date')} className={`${INPUT_BASE} ${errors.effective_date ? 'border-red-400' : ''}`} />
+            <input id="effective_date" type="date" {...register('effective_date')} min={minDate} max={maxDate} className={`${INPUT_BASE} ${errors.effective_date ? 'border-red-400' : ''}`} />
             {errors.effective_date && <span className="mt-1 block text-xs text-red-500">{errors.effective_date.message}</span>}
           </div>
 
           <div>
             <label htmlFor="end_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha fin (opcional)</label>
-            <input id="end_date" type="date" {...register('end_date')} className={INPUT_BASE} />
+            <input id="end_date" type="date" {...register('end_date')} min={minDate} max={maxDate} className={INPUT_BASE} />
           </div>
 
           <div className="sm:col-span-2">
