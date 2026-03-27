@@ -18,47 +18,47 @@ function buildSheetData(rows: ReportRow[], type: string): (string | number)[][] 
   const isGeneral = type === 'general';
   const headers: string[] = [
     ...(isGeneral ? ['Código', 'Empleado'] : []),
-    'Fecha', 'Entrada', 'Salida', 'Min. trabajados', 'Tardanza (min)',
-    'Salida temprana (min)', 'Horas extra (min)', 'HE diurnas (min)',
-    'HE nocturnas (min)', 'Estado',
+    'Fecha', 'Entrada', 'Salida', 'Trabajado', 'Tardanza',
+    'Salida temprana', 'Horas extra', 'HE diurnas', 'HE nocturnas', 'Estado',
   ];
   const dataRows = rows.map((r) => [
-    ...(isGeneral ? [r.employee_internal_id ?? '', r.employee_name ?? ''] : []),
+    ...(isGeneral ? [r.employee_code ?? '', r.employee_name ?? ''] : []),
     r.date,
     r.first_check_in ?? '',
     r.last_check_out ?? '',
-    r.worked_minutes,
-    r.late_minutes,
-    r.early_departure_minutes,
-    r.overtime_minutes,
-    r.overtime_diurnal_minutes,
-    r.overtime_nocturnal_minutes,
+    formatMinutes(r.worked_minutes),
+    formatMinutes(r.late_minutes),
+    formatMinutes(r.early_departure_minutes),
+    formatMinutes(r.overtime_minutes),
+    formatMinutes(r.overtime_diurnal_minutes),
+    formatMinutes(r.overtime_nocturnal_minutes),
     r.status,
   ] as (string | number)[]);
   return [headers, ...dataRows];
 }
 
-function exportToCSV(rows: ReportRow[], type: string, reportId: number) {
+function exportToCSV(rows: ReportRow[], type: string, reportName: string) {
   const ws = XLSX.utils.aoa_to_sheet(buildSheetData(rows, type));
   const csv = XLSX.utils.sheet_to_csv(ws);
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `reporte-${reportId}.csv`;
+  a.download = `${reportName}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-function exportToXLSX(rows: ReportRow[], type: string, reportId: number) {
+function exportToXLSX(rows: ReportRow[], type: string, reportName: string) {
   const ws = XLSX.utils.aoa_to_sheet(buildSheetData(rows, type));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Reporte');
-  XLSX.writeFile(wb, `reporte-${reportId}.xlsx`);
+  XLSX.writeFile(wb, `${reportName}.xlsx`);
 }
 
 function exportToPDF(report: Report) {
   const { id, name, type, date_from, date_to, summary, rows = [], completed_at } = report;
+  const safeName = name.replace(/[/\\:*?"<>|]/g, '-');
   const isGeneral = type === 'general';
   const doc = new jsPDF({ orientation: isGeneral ? 'landscape' : 'portrait' });
   const pageW = doc.internal.pageSize.getWidth();
@@ -91,7 +91,7 @@ function exportToPDF(report: Report) {
     y += 5;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`${s.employee_name}  (${s.employee_internal_id})`, 14, y);
+    doc.text(`${s.employee_name}  (${s.employee_code})`, 14, y);
     y += 4;
   }
 
@@ -180,7 +180,7 @@ function exportToPDF(report: Report) {
       'Sal. temp.', 'HE total', 'HE diurna', 'HE nocturna', 'Estado',
     ]];
     const body = (rows ?? []).map((r) => [
-      ...(isGeneral ? [r.employee_internal_id ?? '', r.employee_name ?? ''] : []),
+      ...(isGeneral ? [r.employee_code ?? '', r.employee_name ?? ''] : []),
       r.date,
       r.first_check_in ?? '—',
       r.last_check_out ?? '—',
@@ -204,7 +204,7 @@ function exportToPDF(report: Report) {
     });
   }
 
-  doc.save(`reporte-${id}.pdf`);
+  doc.save(`${safeName}.pdf`);
 }
 
 export default function ReportDetailPage() {
@@ -250,7 +250,7 @@ export default function ReportDetailPage() {
           {isIndividual && (
             <p className="mb-4 text-sm text-gray-300">
               Empleado: <span className="font-medium text-white">{(summary as ReportSummaryIndividual).employee_name}</span>
-              {' '}({(summary as ReportSummaryIndividual).employee_internal_id})
+              {' '}({(summary as ReportSummaryIndividual).employee_code})
             </p>
           )}
           <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -294,14 +294,14 @@ export default function ReportDetailPage() {
           <span className="text-sm font-medium text-gray-300">Exportar:</span>
           <button
             type="button"
-            onClick={() => exportToCSV(rows, report.type, report.id)}
+            onClick={() => exportToCSV(rows, report.type, report.name)}
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-grafito px-4 py-2 text-sm font-medium text-white transition hover:bg-grafito-lighter cursor-pointer"
           >
             <HiOutlineArrowDownTray className="h-4 w-4" /> CSV
           </button>
           <button
             type="button"
-            onClick={() => exportToXLSX(rows, report.type, report.id)}
+            onClick={() => exportToXLSX(rows, report.type, report.name)}
             className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 cursor-pointer"
           >
             <HiOutlineArrowDownTray className="h-4 w-4" /> Excel (.xlsx)
@@ -348,7 +348,7 @@ export default function ReportDetailPage() {
                 <tr key={i} className="hover:bg-grafito-lighter">
                   {!isIndividual && (
                     <>
-                      <td className="px-4 py-3 text-gray-300">{row.employee_internal_id}</td>
+                      <td className="px-4 py-3 text-gray-300">{row.employee_code}</td>
                       <td className="px-4 py-3 font-medium text-white">{row.employee_name}</td>
                     </>
                   )}

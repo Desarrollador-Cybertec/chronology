@@ -171,7 +171,7 @@ export type ReportStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface ReportSummaryIndividual {
   employee_name: string;
-  employee_internal_id: string;
+  employee_code: string;
   total_days: number;
   days_present: number;
   days_absent: number;
@@ -203,7 +203,7 @@ export interface ReportSummaryGeneral {
 export interface ReportRow {
   employee_id?: number;
   employee_name?: string;
-  employee_internal_id?: string;
+  employee_code?: string;
   date: string;
   first_check_in: string | null;
   last_check_out: string | null;
