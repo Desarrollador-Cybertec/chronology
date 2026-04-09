@@ -7,7 +7,7 @@ import TutorialModal from '@/components/ui/TutorialModal';
 import FileDropZone from '@/components/ui/FileDropZone';
 import ProcessingIndicator from '@/components/ui/ProcessingIndicator';
 import { managerSteps, adminSteps } from '@/data/tutorialSteps';
-import type { AttendanceRecord, ImportBatch } from '@/types/api';
+import type { ImportBatch } from '@/types/api';
 import { ApiError, isSubscriptionError } from '@/api/client';
 import { sileo } from 'sileo';
 import {

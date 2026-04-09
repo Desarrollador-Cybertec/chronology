@@ -125,7 +125,6 @@ function exportToXLSX(rows: ReportRow[], type: string, reportName: string) {
 function exportToPDF(report: Report) {
   const { id, name, type, date_from, date_to, summary, rows = [], completed_at } = report;
   const safeName = name.replace(/[/\\:*?"<>|]/g, '-');
-  const isGeneral = type === 'general';
   const isWide = type !== 'individual';
   const doc = new jsPDF({ orientation: isWide ? 'landscape' : 'portrait' });
   const pageW = doc.internal.pageSize.getWidth();
