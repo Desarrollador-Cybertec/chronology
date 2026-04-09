@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { sileo } from 'sileo';
 import { reports, employees as employeesApi } from '@/api/endpoints';
+import { isSubscriptionError } from '@/api/client';
 import type { Report, PaginationMeta, EmployeeSummary } from '@/types/api';
 import Pagination from '@/components/ui/Pagination';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -88,8 +89,10 @@ export default function ReportsPage() {
       setFormDateFrom('');
       setFormDateTo('');
       setFormEmployeeId('');
-    } catch {
-      sileo.error({ title: 'Error al crear reporte' });
+    } catch (err) {
+      if (!isSubscriptionError(err)) {
+        sileo.error({ title: 'Error al crear reporte' });
+      }
     } finally {
       setCreating(false);
     }
@@ -133,6 +136,10 @@ export default function ReportsPage() {
               <select value={formType} onChange={(e) => setFormType(e.target.value)} className={INPUT_BASE}>
                 <option value="general">General</option>
                 <option value="individual">Individual</option>
+                <option value="tardanzas">Tardanzas</option>
+                <option value="incompletas">Marcaciones incompletas</option>
+                <option value="informe_total">Informe total de novedades</option>
+                <option value="horas_laborales">Horas laborales</option>
               </select>
             </div>
 
@@ -190,6 +197,10 @@ export default function ReportsPage() {
             <option value="">Todos los tipos</option>
             <option value="general">General</option>
             <option value="individual">Individual</option>
+            <option value="tardanzas">Tardanzas</option>
+            <option value="incompletas">Incompletas</option>
+            <option value="informe_total">Informe total</option>
+            <option value="horas_laborales">Horas laborales</option>
           </select>
         </div>
         <div className="w-44">
@@ -228,9 +239,19 @@ export default function ReportsPage() {
                     <td className="px-4 py-3 font-medium text-white">{r.name}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        r.type === 'general' ? 'bg-sky-500/20 text-sky-400' : 'bg-violet-500/20 text-violet-400'
+                        r.type === 'general' ? 'bg-sky-500/20 text-sky-400'
+                        : r.type === 'individual' ? 'bg-violet-500/20 text-violet-400'
+                        : r.type === 'tardanzas' ? 'bg-amber-500/20 text-amber-400'
+                        : r.type === 'incompletas' ? 'bg-orange-500/20 text-orange-400'
+                        : r.type === 'horas_laborales' ? 'bg-teal-500/20 text-teal-400'
+                        : 'bg-rose-500/20 text-rose-400'
                       }`}>
-                        {r.type === 'general' ? 'General' : 'Individual'}
+                        {r.type === 'general' ? 'General'
+                          : r.type === 'individual' ? 'Individual'
+                          : r.type === 'tardanzas' ? 'Tardanzas'
+                          : r.type === 'incompletas' ? 'Incompletas'
+                          : r.type === 'horas_laborales' ? 'Horas laborales'
+                          : 'Informe total'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-300">{r.date_from} → {r.date_to}</td>

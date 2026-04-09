@@ -8,7 +8,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import FileDropZone from '@/components/ui/FileDropZone';
 import ProcessingIndicator from '@/components/ui/ProcessingIndicator';
 import { useAuth } from '@/context/useAuth';
-import { ApiError } from '@/api/client';
+import { ApiError, isSubscriptionError } from '@/api/client';
 import {
   HiOutlineArrowUpTray,
   HiOutlineArrowPath,
@@ -29,6 +29,7 @@ export default function ImportPage() {
   const [uploading, setUploading] = useState(false);
   const [processingBatch, setProcessingBatch] = useState<ImportBatch | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reprocessingId, setReprocessingId] = useState<number | null>(null);
 
   const impAccessors = useMemo(() => ({
     id: (b: ImportBatch) => b.id,
@@ -67,6 +68,7 @@ export default function ImportPage() {
       setProcessingBatch(res.data);
       fetchBatches();
     } catch (err) {
+      if (isSubscriptionError(err)) return;
       if (err instanceof ApiError && err.status === 422) {
         const body = err.body as { errors?: string[] };
         sileo.error({ title: 'Error de validación', description: body.errors?.[0] });
@@ -80,13 +82,18 @@ export default function ImportPage() {
 
   const handleReprocess = async (id: number) => {
     if (!confirm('¿Reprocesar este batch? Los registros de asistencia (no editados manualmente) serán eliminados y recalculados.')) return;
+    setReprocessingId(id);
     try {
       const res = await imports.reprocess(id);
       sileo.success({ title: res.message });
       const batchRes = await imports.get(id);
       setProcessingBatch(batchRes.data);
-    } catch {
-      sileo.error({ title: 'Error al reprocesar' });
+    } catch (err) {
+      if (!isSubscriptionError(err)) {
+        sileo.error({ title: 'Error al reprocesar' });
+      }
+    } finally {
+      setReprocessingId(null);
     }
   };
 
@@ -156,8 +163,13 @@ export default function ImportPage() {
                       <td className="flex gap-2 px-4 py-3">
                         <Link to={`/import/${b.id}`} className="flex items-center gap-1 text-sm text-radar hover:underline"><HiOutlineEye className="h-4 w-4" /> Ver</Link>
                         {isSuperadmin && b.status === 'completed' && (
-                          <button className="flex items-center gap-1 text-sm text-radar hover:underline cursor-pointer" onClick={() => handleReprocess(b.id)}>
-                            <HiOutlineArrowPath className="h-4 w-4" /> Reprocesar
+                          <button
+                            className="flex items-center gap-1 text-sm text-radar hover:underline cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => handleReprocess(b.id)}
+                            disabled={reprocessingId === b.id}
+                          >
+                            <HiOutlineArrowPath className={`h-4 w-4 ${reprocessingId === b.id ? 'animate-spin' : ''}`} />
+                            {reprocessingId === b.id ? 'Reprocesando...' : 'Reprocesar'}
                           </button>
                         )}
                       </td>

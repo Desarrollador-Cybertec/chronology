@@ -1,4 +1,5 @@
-import { AUTH_TOKEN_KEY, HTTP_STATUS } from '@/constants/api';
+import { AUTH_TOKEN_KEY, HTTP_STATUS, SUBSCRIPTION_ERROR_CODES } from '@/constants/api';
+import { fireSubscriptionBlocked, fireSubscriptionUnavailable } from '@/utils/subscriptionEvents';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
@@ -26,6 +27,17 @@ class ApiError extends Error {
 }
 
 export { ApiError };
+
+export function isSubscriptionError(error: unknown): boolean {
+  if (!(error instanceof ApiError)) return false;
+  const body = error.body as Record<string, unknown> | undefined;
+  const code = body?.error_code as string | undefined;
+  if (!code) return false;
+  return (
+    (SUBSCRIPTION_ERROR_CODES as readonly string[]).includes(code) ||
+    code === 'license_unavailable'
+  );
+}
 
 async function request<T>(
   endpoint: string,
@@ -59,6 +71,28 @@ async function request<T>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: 'Error desconocido' }));
+
+    // Subscription blocked (403 with license error code)
+    if (
+      res.status === HTTP_STATUS.FORBIDDEN &&
+      body?.error_code &&
+      (SUBSCRIPTION_ERROR_CODES as readonly string[]).includes(body.error_code)
+    ) {
+      fireSubscriptionBlocked(body.error_code, body.message);
+      throw new ApiError(res.status, body);
+    }
+
+    // Subscription Manager unavailable (503)
+    if (
+      res.status === HTTP_STATUS.SERVICE_UNAVAILABLE &&
+      body?.error_code === 'license_unavailable'
+    ) {
+      fireSubscriptionUnavailable(
+        body.message || 'El sistema de suscripciones no está disponible. Intenta de nuevo en unos minutos.',
+      );
+      throw new ApiError(res.status, body);
+    }
+
     throw new ApiError(res.status, body);
   }
 

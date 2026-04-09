@@ -41,7 +41,7 @@ export default function ReportProcessingIndicator({ report: initial, onComplete 
           <div className="flex items-center gap-2">
             <HiOutlineDocumentChartBar className="h-4 w-4 text-gray-400" />
             <span className="text-sm font-medium text-white">
-              Reporte {report.type === 'individual' ? 'individual' : 'general'} — {report.date_from} → {report.date_to}
+              Reporte — {report.name || `${report.date_from} → ${report.date_to}`}
             </span>
             <StatusBadge status={report.status} />
           </div>

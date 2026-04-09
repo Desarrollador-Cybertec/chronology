@@ -15,12 +15,12 @@ import {
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: HiOutlineHome, end: true },
-  { to: '/employees', label: 'Empleados', icon: HiOutlineUsers },
-  { to: '/shifts', label: 'Turnos', icon: HiOutlineClock, end: true },
-  { to: '/shifts/assign', label: 'Asignar turnos', icon: HiOutlineUserGroup },
-  { to: '/attendance', label: 'Asistencia', icon: HiOutlineClipboardDocumentCheck },
   { to: '/import', label: 'Importar CSV', icon: HiOutlineArrowUpTray },
+  { to: '/attendance', label: 'Asistencia', icon: HiOutlineClipboardDocumentCheck },
+  { to: '/shifts/assign', label: 'Asignar turnos', icon: HiOutlineUserGroup },
   { to: '/reports', label: 'Reportes', icon: HiOutlineDocumentChartBar },
+  { to: '/shifts', label: 'Turnos', icon: HiOutlineClock, end: true },
+  { to: '/employees', label: 'Empleados', icon: HiOutlineUsers },
 ];
 
 export default function AppLayout() {

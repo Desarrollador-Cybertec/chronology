@@ -5,7 +5,14 @@ export const HTTP_STATUS = {
   UNPROCESSABLE: 422,
   FORBIDDEN: 403,
   NO_CONTENT: 204,
+  SERVICE_UNAVAILABLE: 503,
 } as const;
+
+export const SUBSCRIPTION_ERROR_CODES = [
+  'license_denied',
+  'license_expired',
+  'license_suspended',
+] as const;
 
 export const BATCH_STATUS = {
   PENDING: 'pending',

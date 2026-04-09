@@ -1,8 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
-import { Toaster } from 'sileo';
+import { Toaster, sileo } from 'sileo';
+import { useEffect } from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { ProtectedRoute, SuperadminRoute, GuestRoute } from '@/components/layout/ProtectedRoute';
 import AppLayout from '@/components/layout/AppLayout';
+import SubscriptionBlockedModal from '@/components/ui/SubscriptionBlockedModal';
+import { onSubscriptionUnavailable } from '@/utils/subscriptionEvents';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import DashboardPage from '@/pages/DashboardPage';
@@ -25,10 +28,20 @@ import ReportDetailPage from '@/pages/reports/ReportDetailPage';
 import SettingsPage from '@/pages/settings/SettingsPage';
 
 function App() {
+  useEffect(() => {
+    return onSubscriptionUnavailable((message) => {
+      sileo.warning({
+        title: 'Sistema no disponible',
+        description: message,
+      });
+    });
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
         <Toaster position="top-right" options={{ fill: '#202020', roundness: 12 }} />
+        <SubscriptionBlockedModal />
         <Routes>
           {/* Guest routes */}
           <Route element={<GuestRoute />}>

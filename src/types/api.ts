@@ -166,7 +166,7 @@ export interface ImportBatch {
 }
 
 // ── Reports ──
-export type ReportType = 'individual' | 'general';
+export type ReportType = 'individual' | 'general' | 'tardanzas' | 'incompletas' | 'informe_total' | 'horas_laborales';
 export type ReportStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface ReportSummaryIndividual {
@@ -200,10 +200,46 @@ export interface ReportSummaryGeneral {
   total_early_departure_minutes: number;
 }
 
+export interface ReportSummaryTardanzas {
+  total_employees_with_tardanzas: number;
+  total_tardanzas: number;
+  total_late_minutes: number;
+}
+
+export interface ReportSummaryIncompletas {
+  total_employees_with_incompletas: number;
+  total_incompletas: number;
+  total_worked_minutes: number;
+}
+
+export interface ReportSummaryInformeTotal {
+  total_employees_affected: number;
+  total_records: number;
+  total_tardanzas: number;
+  total_salidas_temprano: number;
+  total_incompletas: number;
+  total_late_minutes: number;
+  total_early_departure_minutes: number;
+}
+
+export interface ReportSummaryHorasLaborales {
+  total_employees: number;
+  total_worked_minutes: number;
+}
+
+export type ReportSummary =
+  | ReportSummaryIndividual
+  | ReportSummaryGeneral
+  | ReportSummaryTardanzas
+  | ReportSummaryIncompletas
+  | ReportSummaryInformeTotal
+  | ReportSummaryHorasLaborales;
+
 export interface ReportRow {
   employee_id?: number;
   employee_name?: string;
   employee_code?: string;
+  department?: string;
   date: string;
   first_check_in: string | null;
   last_check_out: string | null;
@@ -216,6 +252,14 @@ export interface ReportRow {
   status: string;
 }
 
+export interface ReportRowHorasLaborales {
+  employee_code: string;
+  employee_name: string;
+  department: string;
+  days_worked: number;
+  total_worked_minutes: number;
+}
+
 export interface Report {
   id: number;
   name: string;
@@ -225,7 +269,7 @@ export interface Report {
   date_from: string;
   date_to: string;
   status: ReportStatus;
-  summary: ReportSummaryIndividual | ReportSummaryGeneral | null;
+  summary: ReportSummary | null;
   rows: ReportRow[] | null;
   error_message: string | null;
   completed_at: string | null;

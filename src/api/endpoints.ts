@@ -99,6 +99,8 @@ export const attendance = {
         const qs = buildQueryString(params ?? {});
         return api.get<PaginatedResponse<AttendanceRecord>>(`/attendance${qs ? `?${qs}` : ''}`);
     },
+    dateRange: () =>
+        api.get<{ data: { min_date: string | null; max_date: string | null } }>('/attendance/date-range'),
     get: (id: number) =>
         api.get<{ data: AttendanceRecord }>(`/attendance/${id}`),
     byEmployee: (employeeId: number, params?: Record<string, string | number>) => {
@@ -120,8 +122,10 @@ export const imports = {
         fd.append('file', file);
         return api.post<{ data: ImportBatch }>('/import', fd);
     },
-    list: (page = 1) =>
-        api.get<PaginatedResponse<ImportBatch>>(`/import?page=${page}`),
+    list: (page = 1, perPage?: number) => {
+        const qs = buildQueryString({ page, per_page: perPage });
+        return api.get<PaginatedResponse<ImportBatch>>(`/import?${qs}`);
+    },
     get: (id: number) =>
         api.get<{ data: ImportBatch }>(`/import/${id}`),
     reprocess: (id: number) =>

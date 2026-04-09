@@ -1,13 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { sileo } from 'sileo';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { reports } from '@/api/endpoints';
-import type { Report, ReportSummaryIndividual, ReportSummaryGeneral, ReportRow } from '@/types/api';
+import type {
+  Report, ReportType, ReportRow, ReportRowHorasLaborales,
+  ReportSummaryIndividual, ReportSummaryGeneral,
+  ReportSummaryTardanzas, ReportSummaryIncompletas, ReportSummaryInformeTotal,
+  ReportSummaryHorasLaborales,
+} from '@/types/api';
+
+const REPORT_TYPE_LABELS: Record<ReportType, string> = {
+  general: 'General',
+  individual: 'Individual',
+  tardanzas: 'Tardanzas',
+  incompletas: 'Incompletas',
+  informe_total: 'Informe total',
+  horas_laborales: 'Horas laborales',
+};
+
+const REPORT_TYPE_BADGE: Record<ReportType, string> = {
+  general: 'bg-sky-500/20 text-sky-400',
+  individual: 'bg-violet-500/20 text-violet-400',
+  tardanzas: 'bg-amber-500/20 text-amber-400',
+  incompletas: 'bg-orange-500/20 text-orange-400',
+  informe_total: 'bg-rose-500/20 text-rose-400',
+  horas_laborales: 'bg-teal-500/20 text-teal-400',
+};
 import StatusBadge from '@/components/ui/StatusBadge';
 import { SkeletonDetail } from '@/components/ui/Skeleton';
+import SortableHeader from '@/components/ui/SortableHeader';
 import { formatMinutes } from '@/utils/formatting';
 import {
   HiOutlineDocumentChartBar,
@@ -15,6 +39,48 @@ import {
 } from 'react-icons/hi2';
 
 function buildSheetData(rows: ReportRow[], type: string): (string | number)[][] {
+  if (type === 'horas_laborales') {
+    const hlRows = rows as unknown as ReportRowHorasLaborales[];
+    const headers = ['Código', 'Empleado', 'Departamento', 'Días trabajados', 'Tiempo trabajado'];
+    const dataRows = hlRows.map((r) => [
+      r.employee_code, r.employee_name, r.department,
+      r.days_worked,
+      formatMinutes(r.total_worked_minutes),
+    ] as (string | number)[]);
+    const totals: (string | number)[] = [
+      'TOTAL', '', '',
+      hlRows.reduce((s, r) => s + r.days_worked, 0),
+      formatMinutes(hlRows.reduce((s, r) => s + r.total_worked_minutes, 0)),
+    ];
+    return [headers, ...dataRows, totals];
+  }
+  if (type === 'tardanzas') {
+    const headers = ['Código', 'Empleado', 'Departamento', 'Fecha', 'Entrada', 'Tardanza (min)', 'Estado'];
+    const dataRows = rows.map((r) => [
+      r.employee_code ?? '', r.employee_name ?? '', r.department ?? '',
+      r.date, r.first_check_in ?? '', r.late_minutes, r.status,
+    ] as (string | number)[]);
+    return [headers, ...dataRows];
+  }
+  if (type === 'incompletas') {
+    const headers = ['Código', 'Empleado', 'Departamento', 'Fecha', 'Entrada', 'Salida', 'Trabajado'];
+    const dataRows = rows.map((r) => [
+      r.employee_code ?? '', r.employee_name ?? '', r.department ?? '',
+      r.date, r.first_check_in ?? '', r.last_check_out ?? '', formatMinutes(r.worked_minutes),
+    ] as (string | number)[]);
+    return [headers, ...dataRows];
+  }
+  if (type === 'informe_total') {
+    const headers = ['Código', 'Empleado', 'Departamento', 'Fecha', 'Entrada', 'Salida',
+      'Tardanza (min)', 'Salida temp. (min)', 'Trabajado', 'Estado'];
+    const dataRows = rows.map((r) => [
+      r.employee_code ?? '', r.employee_name ?? '', r.department ?? '',
+      r.date, r.first_check_in ?? '', r.last_check_out ?? '',
+      r.late_minutes, r.early_departure_minutes, formatMinutes(r.worked_minutes), r.status,
+    ] as (string | number)[]);
+    return [headers, ...dataRows];
+  }
+
   const isGeneral = type === 'general';
   const headers: string[] = [
     ...(isGeneral ? ['Código', 'Empleado'] : []),
@@ -60,7 +126,8 @@ function exportToPDF(report: Report) {
   const { id, name, type, date_from, date_to, summary, rows = [], completed_at } = report;
   const safeName = name.replace(/[/\\:*?"<>|]/g, '-');
   const isGeneral = type === 'general';
-  const doc = new jsPDF({ orientation: isGeneral ? 'landscape' : 'portrait' });
+  const isWide = type !== 'individual';
+  const doc = new jsPDF({ orientation: isWide ? 'landscape' : 'portrait' });
   const pageW = doc.internal.pageSize.getWidth();
   let y = 14;
 
@@ -73,7 +140,7 @@ function exportToPDF(report: Report) {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
-  doc.text(`Reporte #${id}  ·  ${isGeneral ? 'General' : 'Individual'}  ·  Período: ${date_from} → ${date_to}`, 14, y);
+  doc.text(`Reporte #${id}  ·  ${REPORT_TYPE_LABELS[type]}  ·  Período: ${date_from} → ${date_to}`, 14, y);
   if (completed_at) {
     y += 5;
     doc.text(`Generado: ${new Date(completed_at).toLocaleString('es')}`, 14, y);
@@ -81,22 +148,21 @@ function exportToPDF(report: Report) {
   doc.setTextColor(0);
   y += 4;
 
-  // ── Employee info (individual only) ──
-  if (!isGeneral && summary) {
-    const s = summary as ReportSummaryIndividual;
-    y += 4;
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Empleado', 14, y);
-    y += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${s.employee_name}  (${s.employee_code})`, 14, y);
-    y += 4;
-  }
+  // ── Summary block ──
+  if (summary) {
+    if (type === 'individual') {
+      const s = summary as ReportSummaryIndividual;
+      y += 4;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Empleado', 14, y);
+      y += 5;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${s.employee_name}  (${s.employee_code})`, 14, y);
+      y += 4;
+    }
 
-  // ── Summary block (individual only) ──
-  if (!isGeneral && summary) {
     y += 5;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
@@ -104,7 +170,7 @@ function exportToPDF(report: Report) {
     y += 2;
 
     let summaryRows: [string, string][];
-    if (!isGeneral) {
+    if (type === 'individual') {
       const s = summary as ReportSummaryIndividual;
       summaryRows = [
         ['Días totales', String(s.total_days)],
@@ -119,7 +185,7 @@ function exportToPDF(report: Report) {
         ['HE nocturnas', formatMinutes(s.total_overtime_nocturnal_minutes)],
         ['Salida temprana', formatMinutes(s.total_early_departure_minutes)],
       ];
-    } else {
+    } else if (type === 'general') {
       const s = summary as ReportSummaryGeneral;
       summaryRows = [
         ['Empleados', String(s.total_employees)],
@@ -134,6 +200,37 @@ function exportToPDF(report: Report) {
         ['HE diurnas', formatMinutes(s.total_overtime_diurnal_minutes)],
         ['HE nocturnas', formatMinutes(s.total_overtime_nocturnal_minutes)],
         ['Salida temprana', formatMinutes(s.total_early_departure_minutes)],
+      ];
+    } else if (type === 'tardanzas') {
+      const s = summary as ReportSummaryTardanzas;
+      summaryRows = [
+        ['Empleados con tardanzas', String(s.total_employees_with_tardanzas)],
+        ['Total tardanzas', String(s.total_tardanzas)],
+        ['Min. tardanza total', formatMinutes(s.total_late_minutes)],
+      ];
+    } else if (type === 'incompletas') {
+      const s = summary as ReportSummaryIncompletas;
+      summaryRows = [
+        ['Empleados con incompletas', String(s.total_employees_with_incompletas)],
+        ['Total incompletas', String(s.total_incompletas)],
+        ['Tiempo trabajado', formatMinutes(s.total_worked_minutes)],
+      ];
+    } else if (type === 'horas_laborales') {
+      const s = summary as ReportSummaryHorasLaborales;
+      summaryRows = [
+        ['Empleados', String(s.total_employees)],
+        ['Tiempo trabajado', formatMinutes(s.total_worked_minutes)],
+      ];
+    } else {
+      const s = summary as ReportSummaryInformeTotal;
+      summaryRows = [
+        ['Empleados afectados', String(s.total_employees_affected)],
+        ['Total registros', String(s.total_records)],
+        ['Total tardanzas', String(s.total_tardanzas)],
+        ['Salidas temprano', String(s.total_salidas_temprano)],
+        ['Total incompletas', String(s.total_incompletas)],
+        ['Min. tardanza total', formatMinutes(s.total_late_minutes)],
+        ['Min. salida temprana', formatMinutes(s.total_early_departure_minutes)],
       ];
     }
 
@@ -174,24 +271,9 @@ function exportToPDF(report: Report) {
     doc.text('Detalle', 14, y);
     y += 2;
 
-    const head = [[
-      ...(isGeneral ? ['Código', 'Empleado'] : []),
-      'Fecha', 'Entrada', 'Salida', 'Trabajado', 'Tardanza',
-      'Sal. temp.', 'HE total', 'HE diurna', 'HE nocturna', 'Estado',
-    ]];
-    const body = (rows ?? []).map((r) => [
-      ...(isGeneral ? [r.employee_code ?? '', r.employee_name ?? ''] : []),
-      r.date,
-      r.first_check_in ?? '—',
-      r.last_check_out ?? '—',
-      formatMinutes(r.worked_minutes),
-      r.late_minutes > 0 ? formatMinutes(r.late_minutes) : '—',
-      r.early_departure_minutes > 0 ? formatMinutes(r.early_departure_minutes) : '—',
-      r.overtime_minutes > 0 ? formatMinutes(r.overtime_minutes) : '—',
-      r.overtime_diurnal_minutes > 0 ? formatMinutes(r.overtime_diurnal_minutes) : '—',
-      r.overtime_nocturnal_minutes > 0 ? formatMinutes(r.overtime_nocturnal_minutes) : '—',
-      r.status,
-    ]);
+    const sheetData = buildSheetData(rows ?? [], type);
+    const head = [sheetData[0]];
+    const body = sheetData.slice(1).map((r) => r.map((v) => String(v)));
 
     autoTable(doc, {
       head,
@@ -211,6 +293,8 @@ export default function ReportDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hlSortKey, setHlSortKey] = useState<string>('employee_name');
+  const [hlSortDir, setHlSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     if (!id) return;
@@ -219,6 +303,29 @@ export default function ReportDetailPage() {
       .catch(() => sileo.error({ title: 'Error al cargar reporte' }))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const toggleHlSort = (col: string) => {
+    if (col === hlSortKey) {
+      setHlSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setHlSortKey(col);
+      setHlSortDir('asc');
+    }
+  };
+  const hlRows = useMemo<ReportRowHorasLaborales[]>(() => {
+    if (!report || report.type !== 'horas_laborales') return [];
+    const typed = (report.rows ?? []) as unknown as ReportRowHorasLaborales[];
+    return [...typed].sort((a, b) => {
+      const va = a[hlSortKey as keyof ReportRowHorasLaborales];
+      const vb = b[hlSortKey as keyof ReportRowHorasLaborales];
+      if (typeof va === 'number' && typeof vb === 'number') {
+        return hlSortDir === 'asc' ? va - vb : vb - va;
+      }
+      return hlSortDir === 'asc'
+        ? String(va ?? '').localeCompare(String(vb ?? ''))
+        : String(vb ?? '').localeCompare(String(va ?? ''));
+    });
+  }, [report, hlSortKey, hlSortDir]);
 
   if (loading) return <SkeletonDetail rows={8} />;
   if (!report) return <p className="text-gray-400">Reporte no encontrado.</p>;
@@ -234,10 +341,8 @@ export default function ReportDetailPage() {
         <div className="flex items-center gap-2">
           <HiOutlineDocumentChartBar className="h-6 w-6 text-radar" />
           <h2 className="text-2xl font-bold text-white">Reporte #{report.id}</h2>
-          <span className={`ml-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-            report.type === 'general' ? 'bg-sky-500/20 text-sky-400' : 'bg-violet-500/20 text-violet-400'
-          }`}>
-            {isIndividual ? 'Individual' : 'General'}
+          <span className={`ml-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${REPORT_TYPE_BADGE[report.type]}`}>
+            {REPORT_TYPE_LABELS[report.type]}
           </span>
           <StatusBadge status={report.status} />
         </div>
@@ -254,36 +359,74 @@ export default function ReportDetailPage() {
             </p>
           )}
           <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {isIndividual ? (
-              <>
-                <SummaryCard label="Días totales" value={(summary as ReportSummaryIndividual).total_days} />
-                <SummaryCard label="Presentes" value={(summary as ReportSummaryIndividual).days_present} color="text-emerald-400" />
-                <SummaryCard label="Ausentes" value={(summary as ReportSummaryIndividual).days_absent} color="text-red-400" />
-                <SummaryCard label="Incompletos" value={(summary as ReportSummaryIndividual).days_incomplete} color="text-amber-400" />
-                <SummaryCard label="Veces tarde" value={(summary as ReportSummaryIndividual).times_late} color="text-amber-400" />
-                <SummaryCard label="Min. tardanza total" value={formatMinutes((summary as ReportSummaryIndividual).total_late_minutes)} />
-                <SummaryCard label="Tiempo trabajado" value={formatMinutes((summary as ReportSummaryIndividual).total_worked_minutes)} />
-                <SummaryCard label="Horas extra" value={formatMinutes((summary as ReportSummaryIndividual).total_overtime_minutes)} color="text-sky-400" />
-                <SummaryCard label="HE diurnas" value={formatMinutes((summary as ReportSummaryIndividual).total_overtime_diurnal_minutes)} />
-                <SummaryCard label="HE nocturnas" value={formatMinutes((summary as ReportSummaryIndividual).total_overtime_nocturnal_minutes)} />
-                <SummaryCard label="Salida temprana" value={formatMinutes((summary as ReportSummaryIndividual).total_early_departure_minutes)} />
-              </>
-            ) : (
-              <>
-                <SummaryCard label="Empleados" value={(summary as ReportSummaryGeneral).total_employees} />
-                <SummaryCard label="Días totales" value={(summary as ReportSummaryGeneral).total_days} />
-                <SummaryCard label="Presentes" value={(summary as ReportSummaryGeneral).days_present} color="text-emerald-400" />
-                <SummaryCard label="Ausentes" value={(summary as ReportSummaryGeneral).days_absent} color="text-red-400" />
-                <SummaryCard label="Incompletos" value={(summary as ReportSummaryGeneral).days_incomplete} color="text-amber-400" />
-                <SummaryCard label="Entradas tarde" value={(summary as ReportSummaryGeneral).total_late_entries} color="text-amber-400" />
-                <SummaryCard label="Min. tardanza total" value={formatMinutes((summary as ReportSummaryGeneral).total_late_minutes)} />
-                <SummaryCard label="Tiempo trabajado" value={formatMinutes((summary as ReportSummaryGeneral).total_worked_minutes)} />
-                <SummaryCard label="Horas extra" value={formatMinutes((summary as ReportSummaryGeneral).total_overtime_minutes)} color="text-sky-400" />
-                <SummaryCard label="HE diurnas" value={formatMinutes((summary as ReportSummaryGeneral).total_overtime_diurnal_minutes)} />
-                <SummaryCard label="HE nocturnas" value={formatMinutes((summary as ReportSummaryGeneral).total_overtime_nocturnal_minutes)} />
-                <SummaryCard label="Salida temprana" value={formatMinutes((summary as ReportSummaryGeneral).total_early_departure_minutes)} />
-              </>
-            )}
+            {report.type === 'individual' && (() => {
+              const s = summary as ReportSummaryIndividual;
+              return <>
+                <SummaryCard label="Días totales" value={s.total_days} />
+                <SummaryCard label="Presentes" value={s.days_present} color="text-emerald-400" />
+                <SummaryCard label="Ausentes" value={s.days_absent} color="text-red-400" />
+                <SummaryCard label="Incompletos" value={s.days_incomplete} color="text-amber-400" />
+                <SummaryCard label="Veces tarde" value={s.times_late} color="text-amber-400" />
+                <SummaryCard label="Min. tardanza total" value={formatMinutes(s.total_late_minutes)} />
+                <SummaryCard label="Tiempo trabajado" value={formatMinutes(s.total_worked_minutes)} />
+                <SummaryCard label="Horas extra" value={formatMinutes(s.total_overtime_minutes)} color="text-sky-400" />
+                <SummaryCard label="HE diurnas" value={formatMinutes(s.total_overtime_diurnal_minutes)} />
+                <SummaryCard label="HE nocturnas" value={formatMinutes(s.total_overtime_nocturnal_minutes)} />
+                <SummaryCard label="Salida temprana" value={formatMinutes(s.total_early_departure_minutes)} />
+              </>;
+            })()}
+            {report.type === 'general' && (() => {
+              const s = summary as ReportSummaryGeneral;
+              return <>
+                <SummaryCard label="Empleados" value={s.total_employees} />
+                <SummaryCard label="Días totales" value={s.total_days} />
+                <SummaryCard label="Presentes" value={s.days_present} color="text-emerald-400" />
+                <SummaryCard label="Ausentes" value={s.days_absent} color="text-red-400" />
+                <SummaryCard label="Incompletos" value={s.days_incomplete} color="text-amber-400" />
+                <SummaryCard label="Entradas tarde" value={s.total_late_entries} color="text-amber-400" />
+                <SummaryCard label="Min. tardanza total" value={formatMinutes(s.total_late_minutes)} />
+                <SummaryCard label="Tiempo trabajado" value={formatMinutes(s.total_worked_minutes)} />
+                <SummaryCard label="Horas extra" value={formatMinutes(s.total_overtime_minutes)} color="text-sky-400" />
+                <SummaryCard label="HE diurnas" value={formatMinutes(s.total_overtime_diurnal_minutes)} />
+                <SummaryCard label="HE nocturnas" value={formatMinutes(s.total_overtime_nocturnal_minutes)} />
+                <SummaryCard label="Salida temprana" value={formatMinutes(s.total_early_departure_minutes)} />
+              </>;
+            })()}
+            {report.type === 'tardanzas' && (() => {
+              const s = summary as ReportSummaryTardanzas;
+              return <>
+                <SummaryCard label="Empleados con tardanzas" value={s.total_employees_with_tardanzas} />
+                <SummaryCard label="Total tardanzas" value={s.total_tardanzas} color="text-amber-400" />
+                <SummaryCard label="Min. tardanza total" value={formatMinutes(s.total_late_minutes)} />
+              </>;
+            })()}
+            {report.type === 'incompletas' && (() => {
+              const s = summary as ReportSummaryIncompletas;
+              return <>
+                <SummaryCard label="Empleados con incompletas" value={s.total_employees_with_incompletas} />
+                <SummaryCard label="Total incompletas" value={s.total_incompletas} color="text-orange-400" />
+                <SummaryCard label="Tiempo trabajado" value={formatMinutes(s.total_worked_minutes)} />
+              </>;
+            })()}
+            {report.type === 'informe_total' && (() => {
+              const s = summary as ReportSummaryInformeTotal;
+              return <>
+                <SummaryCard label="Empleados afectados" value={s.total_employees_affected} />
+                <SummaryCard label="Total registros" value={s.total_records} />
+                <SummaryCard label="Total tardanzas" value={s.total_tardanzas} color="text-amber-400" />
+                <SummaryCard label="Salidas temprano" value={s.total_salidas_temprano} color="text-amber-400" />
+                <SummaryCard label="Total incompletas" value={s.total_incompletas} color="text-orange-400" />
+                <SummaryCard label="Min. tardanza total" value={formatMinutes(s.total_late_minutes)} />
+                <SummaryCard label="Min. salida temprana" value={formatMinutes(s.total_early_departure_minutes)} />
+              </>;
+            })()}
+            {report.type === 'horas_laborales' && (() => {
+              const s = summary as ReportSummaryHorasLaborales;
+              return <>
+                <SummaryCard label="Empleados" value={s.total_employees} />
+                <SummaryCard label="Tiempo trabajado" value={formatMinutes(s.total_worked_minutes)} />
+              </>;
+            })()}
           </dl>
         </div>
       )}
@@ -323,49 +466,155 @@ export default function ReportDetailPage() {
         </div>
       )}
 
-      {/* Detail rows */}
-      {rows.length > 0 && (
+      {/* Horas laborales table */}
+      {report.type === 'horas_laborales' && hlRows.length > 0 && (
         <div className="mt-6 overflow-x-auto rounded-xl bg-grafito shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-white/8 text-xs uppercase text-gray-400">
-                {!isIndividual && <>
+                <SortableHeader label="Código" column="employee_code" sortKey={hlSortKey} sortDir={hlSortDir} onSort={toggleHlSort} />
+                <SortableHeader label="Empleado" column="employee_name" sortKey={hlSortKey} sortDir={hlSortDir} onSort={toggleHlSort} />
+                <SortableHeader label="Departamento" column="department" sortKey={hlSortKey} sortDir={hlSortDir} onSort={toggleHlSort} />
+                <SortableHeader label="Días trabajados" column="days_worked" sortKey={hlSortKey} sortDir={hlSortDir} onSort={toggleHlSort} />
+                <SortableHeader label="Tiempo trabajado" column="total_worked_minutes" sortKey={hlSortKey} sortDir={hlSortDir} onSort={toggleHlSort} />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {hlRows.map((row, i) => (
+                <tr key={i} className="hover:bg-grafito-lighter">
+                  <td className="px-4 py-3 text-gray-300">{row.employee_code}</td>
+                  <td className="px-4 py-3 font-medium text-white">{row.employee_name}</td>
+                  <td className="px-4 py-3 text-gray-300">{row.department || '—'}</td>
+                  <td className="px-4 py-3">{row.days_worked}</td>
+                  <td className="px-4 py-3">{formatMinutes(row.total_worked_minutes)}</td>
+                </tr>
+              ))}
+              {summary && (() => {
+                const s = summary as ReportSummaryHorasLaborales;
+                return (
+                  <tr className="border-t border-white/20 bg-navy/40 font-semibold">
+                    <td colSpan={3} className="px-4 py-3 text-sm text-gray-300">
+                      Totales ({s.total_employees} empleados)
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">—</td>
+                    <td className="px-4 py-3">{formatMinutes(s.total_worked_minutes)}</td>
+                  </tr>
+                );
+              })()}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Detail rows */}
+      {report.type !== 'horas_laborales' && rows.length > 0 && (
+        <div className="mt-6 overflow-x-auto rounded-xl bg-grafito shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-white/8 text-xs uppercase text-gray-400">
+                {report.type === 'tardanzas' && <>
                   <th className="px-4 py-3">Código</th>
                   <th className="px-4 py-3">Empleado</th>
+                  <th className="px-4 py-3">Departamento</th>
+                  <th className="px-4 py-3">Fecha</th>
+                  <th className="px-4 py-3">Entrada</th>
+                  <th className="px-4 py-3">Tardanza</th>
+                  <th className="px-4 py-3">Estado</th>
                 </>}
-                <th className="px-4 py-3">Fecha</th>
-                <th className="px-4 py-3">Entrada</th>
-                <th className="px-4 py-3">Salida</th>
-                <th className="px-4 py-3">Trabajado</th>
-                <th className="px-4 py-3">Tardanza</th>
-                <th className="px-4 py-3">Salida temp.</th>
-                <th className="px-4 py-3">HE</th>
-                <th className="px-4 py-3">Estado</th>
+                {report.type === 'incompletas' && <>
+                  <th className="px-4 py-3">Código</th>
+                  <th className="px-4 py-3">Empleado</th>
+                  <th className="px-4 py-3">Departamento</th>
+                  <th className="px-4 py-3">Fecha</th>
+                  <th className="px-4 py-3">Entrada</th>
+                  <th className="px-4 py-3">Salida</th>
+                  <th className="px-4 py-3">Trabajado</th>
+                </>}
+                {report.type === 'informe_total' && <>
+                  <th className="px-4 py-3">Código</th>
+                  <th className="px-4 py-3">Empleado</th>
+                  <th className="px-4 py-3">Departamento</th>
+                  <th className="px-4 py-3">Fecha</th>
+                  <th className="px-4 py-3">Entrada</th>
+                  <th className="px-4 py-3">Salida</th>
+                  <th className="px-4 py-3">Tardanza</th>
+                  <th className="px-4 py-3">Salida temp.</th>
+                  <th className="px-4 py-3">Trabajado</th>
+                  <th className="px-4 py-3">Estado</th>
+                </>}
+                {(report.type === 'individual' || report.type === 'general') && <>
+                  {!isIndividual && <>
+                    <th className="px-4 py-3">Código</th>
+                    <th className="px-4 py-3">Empleado</th>
+                  </>}
+                  <th className="px-4 py-3">Fecha</th>
+                  <th className="px-4 py-3">Entrada</th>
+                  <th className="px-4 py-3">Salida</th>
+                  <th className="px-4 py-3">Trabajado</th>
+                  <th className="px-4 py-3">Tardanza</th>
+                  <th className="px-4 py-3">Salida temp.</th>
+                  <th className="px-4 py-3">HE</th>
+                  <th className="px-4 py-3">Estado</th>
+                </>}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {rows.map((row, i) => (
                 <tr key={i} className="hover:bg-grafito-lighter">
-                  {!isIndividual && (
-                    <>
+                  {report.type === 'tardanzas' && <>
+                    <td className="px-4 py-3 text-gray-300">{row.employee_code}</td>
+                    <td className="px-4 py-3 font-medium text-white">{row.employee_name}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.department ?? '—'}</td>
+                    <td className="px-4 py-3">{row.date}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.first_check_in ?? '—'}</td>
+                    <td className="px-4 py-3 text-amber-400 font-medium">{formatMinutes(row.late_minutes)}</td>
+                    <td className="px-4 py-3"><StatusBadge status={row.status} /></td>
+                  </>}
+                  {report.type === 'incompletas' && <>
+                    <td className="px-4 py-3 text-gray-300">{row.employee_code}</td>
+                    <td className="px-4 py-3 font-medium text-white">{row.employee_name}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.department ?? '—'}</td>
+                    <td className="px-4 py-3">{row.date}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.first_check_in ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.last_check_out ?? '—'}</td>
+                    <td className="px-4 py-3">{formatMinutes(row.worked_minutes)}</td>
+                  </>}
+                  {report.type === 'informe_total' && <>
+                    <td className="px-4 py-3 text-gray-300">{row.employee_code}</td>
+                    <td className="px-4 py-3 font-medium text-white">{row.employee_name}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.department ?? '—'}</td>
+                    <td className="px-4 py-3">{row.date}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.first_check_in ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.last_check_out ?? '—'}</td>
+                    <td className={`px-4 py-3 ${row.late_minutes > 0 ? 'text-amber-400 font-medium' : ''}`}>
+                      {row.late_minutes > 0 ? formatMinutes(row.late_minutes) : '—'}
+                    </td>
+                    <td className={`px-4 py-3 ${row.early_departure_minutes > 0 ? 'text-amber-400' : ''}`}>
+                      {row.early_departure_minutes > 0 ? formatMinutes(row.early_departure_minutes) : '—'}
+                    </td>
+                    <td className="px-4 py-3">{formatMinutes(row.worked_minutes)}</td>
+                    <td className="px-4 py-3"><StatusBadge status={row.status} /></td>
+                  </>}
+                  {(report.type === 'individual' || report.type === 'general') && <>
+                    {!isIndividual && <>
                       <td className="px-4 py-3 text-gray-300">{row.employee_code}</td>
                       <td className="px-4 py-3 font-medium text-white">{row.employee_name}</td>
-                    </>
-                  )}
-                  <td className="px-4 py-3">{row.date}</td>
-                  <td className="px-4 py-3 text-gray-300">{row.first_check_in ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-300">{row.last_check_out ?? '—'}</td>
-                  <td className="px-4 py-3">{formatMinutes(row.worked_minutes)}</td>
-                  <td className={`px-4 py-3 ${row.late_minutes > 0 ? 'text-amber-400 font-medium' : ''}`}>
-                    {row.late_minutes > 0 ? formatMinutes(row.late_minutes) : '—'}
-                  </td>
-                  <td className={`px-4 py-3 ${row.early_departure_minutes > 0 ? 'text-amber-400' : ''}`}>
-                    {row.early_departure_minutes > 0 ? formatMinutes(row.early_departure_minutes) : '—'}
-                  </td>
-                  <td className={`px-4 py-3 ${row.overtime_minutes > 0 ? 'text-sky-400' : ''}`}>
-                    {row.overtime_minutes > 0 ? formatMinutes(row.overtime_minutes) : '—'}
-                  </td>
-                  <td className="px-4 py-3"><StatusBadge status={row.status} /></td>
+                    </>}
+                    <td className="px-4 py-3">{row.date}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.first_check_in ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-300">{row.last_check_out ?? '—'}</td>
+                    <td className="px-4 py-3">{formatMinutes(row.worked_minutes)}</td>
+                    <td className={`px-4 py-3 ${row.late_minutes > 0 ? 'text-amber-400 font-medium' : ''}`}>
+                      {row.late_minutes > 0 ? formatMinutes(row.late_minutes) : '—'}
+                    </td>
+                    <td className={`px-4 py-3 ${row.early_departure_minutes > 0 ? 'text-amber-400' : ''}`}>
+                      {row.early_departure_minutes > 0 ? formatMinutes(row.early_departure_minutes) : '—'}
+                    </td>
+                    <td className={`px-4 py-3 ${row.overtime_minutes > 0 ? 'text-sky-400' : ''}`}>
+                      {row.overtime_minutes > 0 ? formatMinutes(row.overtime_minutes) : '—'}
+                    </td>
+                    <td className="px-4 py-3"><StatusBadge status={row.status} /></td>
+                  </>}
                 </tr>
               ))}
             </tbody>
