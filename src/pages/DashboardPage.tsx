@@ -310,7 +310,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Active week info bar */}
-          <div className="flex items-center justify-between px-5 py-2.5 bg-white/[0.03]">
+          <div className="flex items-center justify-between px-5 py-2.5 bg-white/3">
             <p className="text-sm text-gray-300">
               Mostrando datos del{' '}
               <span className="font-semibold text-white">
