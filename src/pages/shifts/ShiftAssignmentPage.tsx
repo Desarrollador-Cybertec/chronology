@@ -14,18 +14,6 @@ import type { AssignFormData } from './AssignShiftForm';
 import EmployeeAssignRow from './EmployeeAssignRow';
 import { HiOutlineUserGroup, HiOutlineMagnifyingGlass, HiOutlineTrash } from 'react-icons/hi2';
 
-function getCurrentAssignment(assignments: ShiftAssignment[] | undefined) {
-  if (!assignments?.length) return undefined;
-  const today = new Date().toISOString().slice(0, 10);
-  // Try active assignment first
-  const active = assignments.find(
-    (a) => a.effective_date <= today && (!a.end_date || a.end_date >= today),
-  );
-  if (active) return active;
-  // Fallback: most recent assignment (even if expired)
-  return [...assignments].sort((a, b) => b.effective_date.localeCompare(a.effective_date))[0];
-}
-
 export default function ShiftAssignmentPage() {
   const { isSuperadmin } = useAuth();
   const [empList, setEmpList] = useState<Employee[]>([]);
@@ -304,7 +292,7 @@ export default function ShiftAssignmentPage() {
                   <EmployeeAssignRow
                     key={emp.id}
                     emp={emp}
-                    assignment={getCurrentAssignment(assignmentMap[emp.id])}
+                    assignments={assignmentMap[emp.id] ?? []}
                     shifts={shifts}
                     isSelected={selected.has(emp.id)}
                     isSuperadmin={isSuperadmin}

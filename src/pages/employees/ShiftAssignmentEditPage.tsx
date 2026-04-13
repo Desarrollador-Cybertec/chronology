@@ -22,6 +22,7 @@ const DAY_OPTIONS = [
 
 const editSchema = z.object({
   shift_id: z.coerce.number().min(1, 'Selecciona un turno'),
+  effective_date: z.string().min(1, 'La fecha de inicio es requerida'),
   end_date: z.string().optional().or(z.literal('')),
   work_days: z.array(z.number().min(0).max(6)).min(1, 'Selecciona al menos un día'),
 });
@@ -60,6 +61,7 @@ export default function ShiftAssignmentEditPage() {
         setShifts(shiftsRes.data);
         reset({
           shift_id: a.shift_id,
+          effective_date: a.effective_date,
           end_date: a.end_date ?? '',
           work_days: a.work_days,
         });
@@ -78,6 +80,7 @@ export default function ShiftAssignmentEditPage() {
     try {
       await shiftAssignments.update(Number(assignmentId), {
         shift_id: data.shift_id,
+        effective_date: data.effective_date,
         end_date: data.end_date || undefined,
         work_days: data.work_days,
       });
@@ -106,6 +109,12 @@ export default function ShiftAssignmentEditPage() {
               ))}
             </select>
             {errors.shift_id && <span className="mt-1 block text-xs text-red-500">{errors.shift_id.message}</span>}
+          </div>
+
+          <div>
+            <label htmlFor="effective_date" className="mb-1 block text-sm font-medium text-gray-300">Fecha de inicio</label>
+            <input id="effective_date" type="date" {...register('effective_date')} min={minDate} max={maxDate} className={`${INPUT_BASE} ${errors.effective_date ? 'border-red-400' : ''}`} />
+            {errors.effective_date && <span className="mt-1 block text-xs text-red-500">{errors.effective_date.message}</span>}
           </div>
 
           <div>

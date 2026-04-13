@@ -69,7 +69,7 @@ export const shiftAssignments = {
         api.get<{ data: ShiftAssignment }>(`/employee-shifts/${id}`),
     create: (data: { employee_id: number; shift_id: number; effective_date: string; end_date?: string; work_days?: number[] }) =>
         api.post<{ data: ShiftAssignment }>('/employee-shifts', data),
-    update: (id: number, data: Partial<{ shift_id: number; end_date: string; work_days: number[] }>) =>
+    update: (id: number, data: Partial<{ shift_id: number; effective_date: string; end_date: string; work_days: number[] }>) =>
         api.put<{ data: ShiftAssignment }>(`/employee-shifts/${id}`, data),
     delete: (id: number) =>
         api.delete<{ message: string }>(`/employee-shifts/${id}`),

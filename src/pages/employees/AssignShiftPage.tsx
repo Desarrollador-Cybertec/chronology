@@ -75,6 +75,10 @@ export default function AssignShiftPage() {
         <TutorialModal steps={assignShiftSteps} />
       </div>
 
+      <div className="mt-4 rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-300">
+        <strong>Nota:</strong> Esta acción crea una asignación adicional sin modificar las existentes. Para reemplazar un turno, edita la fecha de fin de la asignación anterior desde el perfil del empleado.
+      </div>
+
       <div className="mt-6 max-w-2xl rounded-xl bg-grafito p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
           <input type="hidden" {...register('employee_id')} />
