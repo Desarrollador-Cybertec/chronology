@@ -8,17 +8,15 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { SkeletonDetail } from '@/components/ui/Skeleton';
 import Pagination from '@/components/ui/Pagination';
 import TutorialModal from '@/components/ui/TutorialModal';
+import ExceptionFormModal from '@/components/schedule-exceptions/ExceptionFormModal';
 import { employeeDetailSteps, employeeDetailAdminSteps } from '@/data/pageTutorials';
-import { HiOutlineTrash, HiOutlinePencilSquare, HiOutlinePlusCircle, HiOutlineXMark } from 'react-icons/hi2';
-import { INPUT_BASE } from '@/constants/ui';
-import { useDateBounds } from '@/hooks/useDateBounds';
+import { HiOutlineTrash, HiOutlinePencilSquare, HiOutlinePlusCircle } from 'react-icons/hi2';
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { isSuperadmin } = useAuth();
-  const { minDate, maxDate } = useDateBounds();
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,13 +26,7 @@ export default function EmployeeDetailPage() {
   const [excMeta, setExcMeta] = useState<PaginationMeta | null>(null);
   const [excPage, setExcPage] = useState(1);
   const [excLoading, setExcLoading] = useState(false);
-
-  // Exception modal
   const [showModal, setShowModal] = useState(false);
-  const [formDate, setFormDate] = useState('');
-  const [formIsWorkingDay, setFormIsWorkingDay] = useState(false);
-  const [formReason, setFormReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -62,28 +54,9 @@ export default function EmployeeDetailPage() {
 
   useEffect(() => { fetchExceptions(); }, [fetchExceptions]);
 
-  const resetForm = () => { setFormDate(''); setFormIsWorkingDay(false); setFormReason(''); };
-
-  const handleCreateException = async () => {
-    if (!formDate) { sileo.error({ title: 'La fecha es requerida' }); return; }
-    setSubmitting(true);
-    try {
-      await scheduleExceptions.create({
-        employee_id: Number(id),
-        date: formDate,
-        is_working_day: formIsWorkingDay,
-        reason: formReason || undefined,
-      });
-      sileo.success({ title: 'Excepción creada' });
-      setShowModal(false);
-      resetForm();
-      setExcPage(1);
-      fetchExceptions();
-    } catch {
-      sileo.error({ title: 'Error al crear excepción' });
-    } finally {
-      setSubmitting(false);
-    }
+  const handleExceptionCreated = () => {
+    if (excPage !== 1) setExcPage(1);
+    else fetchExceptions();
   };
 
   const handleDeleteException = async (exId: number) => {
@@ -220,7 +193,7 @@ export default function EmployeeDetailPage() {
               <button
                 type="button"
                 className="flex items-center gap-1.5 rounded-lg bg-radar px-3 py-1.5 text-xs font-semibold text-white hover:bg-radar-dark cursor-pointer"
-                onClick={() => { resetForm(); setShowModal(true); }}
+                onClick={() => setShowModal(true)}
               >
                 <HiOutlinePlusCircle className="h-4 w-4" /> Nueva excepción
               </button>
@@ -281,61 +254,12 @@ export default function EmployeeDetailPage() {
         </Link>
       </div>
 
-      {/* Create exception modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-xl bg-grafito p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Nueva excepción de horario</h3>
-              <button type="button" className="text-gray-400 hover:text-white cursor-pointer" onClick={() => setShowModal(false)}>
-                <HiOutlineXMark className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-300">Fecha</label>
-                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} min={minDate} max={maxDate} className={`w-full ${INPUT_BASE}`} />
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                  <input type="checkbox" checked={formIsWorkingDay} onChange={(e) => setFormIsWorkingDay(e.target.checked)} className="rounded" />
-                  Es día laborable
-                </label>
-                <span className="mt-1 block text-xs text-gray-400">
-                  {formIsWorkingDay ? 'El empleado debe trabajar este día (ej: día extra)' : 'El empleado no trabaja este día (ej: permiso, feriado)'}
-                </span>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-300">Motivo (opcional)</label>
-                <textarea
-                  rows={2}
-                  value={formReason}
-                  onChange={(e) => setFormReason(e.target.value)}
-                  className={`w-full ${INPUT_BASE}`}
-                  placeholder="Ej: Permiso personal, feriado empresa..."
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-grafito-lighter cursor-pointer"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg bg-radar px-4 py-2 text-sm font-semibold text-white hover:bg-radar-dark disabled:opacity-50 cursor-pointer"
-                  disabled={submitting}
-                  onClick={handleCreateException}
-                >
-                  {submitting ? 'Creando...' : 'Crear excepción'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ExceptionFormModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onCreated={handleExceptionCreated}
+        employeeId={Number(id)}
+      />
     </div>
   );
 }

@@ -224,7 +224,17 @@ export interface ReportSummaryInformeTotal {
 
 export interface ReportSummaryHorasLaborales {
   total_employees: number;
+  total_days: number;
+  days_present: number;
+  days_absent: number;
+  days_incomplete: number;
+  total_late_entries: number;
+  total_late_minutes: number;
   total_worked_minutes: number;
+  total_overtime_minutes: number;
+  total_overtime_diurnal_minutes: number;
+  total_overtime_nocturnal_minutes: number;
+  total_early_departure_minutes: number;
 }
 
 export type ReportSummary =
@@ -257,6 +267,8 @@ export interface ReportRowHorasLaborales {
   employee_name: string;
   department: string;
   days_worked: number;
+  days_absent: number;
+  days_incomplete: number;
   total_worked_minutes: number;
 }
 

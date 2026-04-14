@@ -10,4 +10,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router'],
+          'forms-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'icons-vendor': ['react-icons'],
+          'export-pdf': ['jspdf', 'jspdf-autotable'],
+          'export-xlsx': ['xlsx'],
+        },
+      },
+    },
+  },
 })
