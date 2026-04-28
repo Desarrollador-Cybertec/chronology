@@ -456,7 +456,7 @@ export default function DashboardPage() {
               <thead className="border-b border-white/8 text-xs uppercase text-gray-400">
                 <tr>
                   <SortableHeader label="Empleado" column="name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3" />
-                  <SortableHeader label="Veces tarde" column="count" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3 text-center" />
+                  <SortableHeader label="Días tarde" column="count" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3 text-center" />
                   <SortableHeader label="Total min" column="totalMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3 text-right" />
                   <SortableHeader label="Promedio" column="avgMinutes" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3 text-right" />
                   <SortableHeader label="Última tardanza" column="lastDate" sortKey={sortKey} sortDir={sortDir} onSort={toggle} className="pb-2 px-3" />

@@ -29,7 +29,7 @@ export const managerSteps = [
   },
   {
     title: 'Reincidentes de tardanza en el Dashboard',
-    description: 'En la parte inferior del Dashboard se muestra una tabla de reincidentes de tardanza: empleados con 2 o más tardanzas. Muestra nombre, veces tarde, total de minutos, promedio y última fecha de tardanza. Haz clic en "Ver todo" para abrir la lista completa de asistencia con tardanzas.',
+    description: 'En la parte inferior del Dashboard se muestra una tabla de reincidentes de tardanza: empleados con 2 o más tardanzas. Muestra nombre, Días tarde, total de minutos, promedio y última fecha de tardanza. Haz clic en "Ver todo" para abrir la lista completa de asistencia con tardanzas.',
     icon: icon(HiOutlineClipboardDocumentCheck),
   },
   {
@@ -83,7 +83,7 @@ export const adminSteps = [
   },
   {
     title: 'Reincidentes de tardanza desde el Dashboard',
-    description: 'La tabla inferior del Dashboard muestra los empleados con tardanzas recurrentes (2 o más): nombre, veces tarde, total de minutos, promedio y última tardanza. Haz clic en "Ver todo" para ir a la lista completa de asistencia con tardanzas, o en "Ver perfil" para ir al detalle del empleado.',
+    description: 'La tabla inferior del Dashboard muestra los empleados con tardanzas recurrentes (2 o más): nombre, Días tarde, total de minutos, promedio y última tardanza. Haz clic en "Ver todo" para ir a la lista completa de asistencia con tardanzas, o en "Ver perfil" para ir al detalle del empleado.',
     icon: icon(HiOutlineClipboardDocumentCheck),
   },
   {

@@ -51,7 +51,7 @@ function IndividualCards({ s }: { s: ReportSummaryIndividual }) {
       <SummaryCard label="Presentes" value={s.days_present} color="text-emerald-400" />
       <SummaryCard label="Ausentes" value={s.days_absent} color="text-red-400" />
       <SummaryCard label="Incompletos" value={s.days_incomplete} color="text-amber-400" />
-      <SummaryCard label="Veces tarde" value={s.times_late} color="text-amber-400" />
+      <SummaryCard label="Dias tarde" value={s.times_late} color="text-amber-400" />
       <SummaryCard label="Min. tardanza total" value={formatMinutes(s.total_late_minutes)} />
       <SummaryCard label="Tiempo trabajado" value={formatMinutes(s.total_worked_minutes)} />
       <SummaryCard label="Horas extra" value={formatMinutes(s.total_overtime_minutes)} color="text-sky-400" />

@@ -173,7 +173,7 @@ export async function exportToPDF(report: Report, filteredRows?: (ReportRow | Re
         ['Días presentes', String(s.days_present)],
         ['Días ausentes', String(s.days_absent)],
         ['Días incompletos', String(s.days_incomplete)],
-        ['Veces tarde', String(s.times_late)],
+        ['Días tarde', String(s.times_late)],
         ['Tiempo trabajado', formatMinutes(s.total_worked_minutes)],
         ['Min. tardanza total', formatMinutes(s.total_late_minutes)],
         ['Horas extra', formatMinutes(s.total_overtime_minutes)],
