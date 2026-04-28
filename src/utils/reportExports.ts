@@ -24,21 +24,9 @@ export const REPORT_TYPE_BADGE = {
   horas_laborales: 'bg-teal-500/20 text-teal-400',
 } as const;
 
-export function buildSheetData(rows: ReportRow[], type: string): (string | number)[][] {
+export function buildSheetData(rows: (ReportRow | ReportRowHorasLaborales)[], type: string): (string | number)[][] {
   if (type === 'horas_laborales') {
-    const aggMap = new Map<string, ReportRowHorasLaborales>();
-    for (const row of rows) {
-      const key = row.employee_code ?? '';
-      if (!aggMap.has(key)) {
-        aggMap.set(key, { employee_code: key, employee_name: row.employee_name ?? '', department: row.department ?? '', days_worked: 0, days_absent: 0, days_incomplete: 0, total_worked_minutes: 0 });
-      }
-      const agg = aggMap.get(key)!;
-      if (row.status === 'present') agg.days_worked++;
-      else if (row.status === 'absent') agg.days_absent++;
-      else if (row.status === 'incomplete') agg.days_incomplete++;
-      agg.total_worked_minutes += row.worked_minutes;
-    }
-    const hlRows = [...aggMap.values()].sort((a, b) => Number(a.employee_code) - Number(b.employee_code));
+    const hlRows = (rows as ReportRowHorasLaborales[]).sort((a, b) => Number(a.employee_code) - Number(b.employee_code));
     const headers = ['Código', 'Empleado', 'Departamento', 'Días trabajados', 'Ausencias', 'Incompletos', 'Tiempo trabajado'];
     const dataRows = hlRows.map((r) => [
       r.employee_code, r.employee_name, r.department,
@@ -54,9 +42,13 @@ export function buildSheetData(rows: ReportRow[], type: string): (string | numbe
     ];
     return [headers, ...dataRows, totals];
   }
+
+  // All remaining types use raw per-day ReportRow fields
+  const rawRows = rows as ReportRow[];
+
   if (type === 'tardanzas') {
     const headers = ['Código', 'Empleado', 'Departamento', 'Fecha', 'Entrada', 'Tardanza (min)', 'Estado'];
-    const dataRows = rows.map((r) => [
+    const dataRows = rawRows.map((r) => [
       r.employee_code ?? '', r.employee_name ?? '', r.department ?? '',
       r.date, r.first_check_in ?? '', r.late_minutes, r.status,
     ] as (string | number)[]);
@@ -64,7 +56,7 @@ export function buildSheetData(rows: ReportRow[], type: string): (string | numbe
   }
   if (type === 'incompletas') {
     const headers = ['Código', 'Empleado', 'Departamento', 'Fecha', 'Entrada', 'Salida', 'Trabajado'];
-    const dataRows = rows.map((r) => [
+    const dataRows = rawRows.map((r) => [
       r.employee_code ?? '', r.employee_name ?? '', r.department ?? '',
       r.date, r.first_check_in ?? '', r.last_check_out ?? '', formatMinutes(r.worked_minutes),
     ] as (string | number)[]);
@@ -73,7 +65,7 @@ export function buildSheetData(rows: ReportRow[], type: string): (string | numbe
   if (type === 'informe_total') {
     const headers = ['Código', 'Empleado', 'Departamento', 'Fecha', 'Entrada', 'Salida',
       'Tardanza (min)', 'Salida temp. (min)', 'Trabajado', 'Estado'];
-    const dataRows = rows.map((r) => [
+    const dataRows = rawRows.map((r) => [
       r.employee_code ?? '', r.employee_name ?? '', r.department ?? '',
       r.date, r.first_check_in ?? '', r.last_check_out ?? '',
       r.late_minutes, r.early_departure_minutes, formatMinutes(r.worked_minutes), r.status,
@@ -87,7 +79,7 @@ export function buildSheetData(rows: ReportRow[], type: string): (string | numbe
     'Fecha', 'Entrada', 'Salida', 'Trabajado', 'Tardanza',
     'Salida temprana', 'Horas extra', 'HE diurnas', 'HE nocturnas', 'Estado',
   ];
-  const dataRows = rows.map((r) => [
+  const dataRows = rawRows.map((r) => [
     ...(isGeneral ? [r.employee_code ?? '', r.employee_name ?? ''] : []),
     r.date,
     r.first_check_in ?? '',
@@ -103,7 +95,7 @@ export function buildSheetData(rows: ReportRow[], type: string): (string | numbe
   return [headers, ...dataRows];
 }
 
-export async function exportToCSV(rows: ReportRow[], type: string, reportName: string) {
+export async function exportToCSV(rows: (ReportRow | ReportRowHorasLaborales)[], type: string, reportName: string) {
   const XLSX = await import('xlsx');
   const ws = XLSX.utils.aoa_to_sheet(buildSheetData(rows, type));
   const csv = XLSX.utils.sheet_to_csv(ws);
@@ -116,7 +108,7 @@ export async function exportToCSV(rows: ReportRow[], type: string, reportName: s
   URL.revokeObjectURL(url);
 }
 
-export async function exportToXLSX(rows: ReportRow[], type: string, reportName: string) {
+export async function exportToXLSX(rows: (ReportRow | ReportRowHorasLaborales)[], type: string, reportName: string) {
   const XLSX = await import('xlsx');
   const ws = XLSX.utils.aoa_to_sheet(buildSheetData(rows, type));
   const wb = XLSX.utils.book_new();
@@ -124,13 +116,13 @@ export async function exportToXLSX(rows: ReportRow[], type: string, reportName: 
   XLSX.writeFile(wb, `${reportName}.xlsx`);
 }
 
-export async function exportToPDF(report: Report, filteredRows?: ReportRow[]) {
+export async function exportToPDF(report: Report, filteredRows?: (ReportRow | ReportRowHorasLaborales)[]) {
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
     import('jspdf'),
     import('jspdf-autotable'),
   ]);
   const { id, name, type, date_from, date_to, summary, completed_at } = report;
-  const rows = filteredRows ?? report.rows ?? [];
+  const rows: (ReportRow | ReportRowHorasLaborales)[] = filteredRows ?? report.rows ?? [];
   const safeName = name.replace(/[/\\:*?"<>|]/g, '-');
   const isWide = type !== 'individual';
   const doc = new jsPDF({ orientation: isWide ? 'landscape' : 'portrait' });
@@ -145,7 +137,7 @@ export async function exportToPDF(report: Report, filteredRows?: ReportRow[]) {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
-  doc.text(`Reporte #${id}  ·  ${REPORT_TYPE_LABELS[type]}  ·  Período: ${date_from} → ${date_to}`, 14, y);
+  doc.text(`Reporte #${id}  |  ${REPORT_TYPE_LABELS[type]}  |  Periodo: ${date_from} - ${date_to}`, 14, y);
   if (completed_at) {
     y += 5;
     doc.text(`Generado: ${new Date(completed_at).toLocaleString('es')}`, 14, y);
@@ -223,17 +215,7 @@ export async function exportToPDF(report: Report, filteredRows?: ReportRow[]) {
       const s = summary as ReportSummaryHorasLaborales;
       summaryRows = [
         ['Empleados', String(s.total_employees)],
-        ['Días totales', String(s.total_days)],
-        ['Presentes', String(s.days_present)],
-        ['Ausentes', String(s.days_absent)],
-        ['Incompletos', String(s.days_incomplete)],
-        ['Entradas tarde', String(s.total_late_entries)],
-        ['Min. tardanza', formatMinutes(s.total_late_minutes)],
         ['Tiempo trabajado', formatMinutes(s.total_worked_minutes)],
-        ['Horas extra', formatMinutes(s.total_overtime_minutes)],
-        ['HE diurnas', formatMinutes(s.total_overtime_diurnal_minutes)],
-        ['HE nocturnas', formatMinutes(s.total_overtime_nocturnal_minutes)],
-        ['Salida temprana', formatMinutes(s.total_early_departure_minutes)],
       ];
     } else {
       const s = summary as ReportSummaryInformeTotal;

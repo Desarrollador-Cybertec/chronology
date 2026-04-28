@@ -107,6 +107,7 @@ export default function EmployeeDetailPage() {
           <h3 className="mb-4 text-lg font-semibold text-white">Información</h3>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between"><dt className="text-gray-400">ID Interno</dt><dd className="font-medium">{employee.internal_id}</dd></div>
+            <div className="flex justify-between"><dt className="text-gray-400">Correo</dt><dd className="font-medium">{employee.email ?? '—'}</dd></div>
             <div className="flex justify-between"><dt className="text-gray-400">Departamento</dt><dd className="font-medium">{employee.department ?? '—'}</dd></div>
             <div className="flex justify-between"><dt className="text-gray-400">Cargo</dt><dd className="font-medium">{employee.position ?? '—'}</dd></div>
             <div className="flex justify-between"><dt className="text-gray-400">Estado</dt><dd>

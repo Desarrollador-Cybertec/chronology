@@ -6,6 +6,8 @@ import type {
     RegisterResponse,
     Employee,
     EmployeeSummary,
+    ImportEmailsResult,
+    SendBatchEmailsResult,
     Shift,
     ShiftBreak,
     ShiftAssignment,
@@ -42,6 +44,11 @@ export const employees = {
     allIds: (params?: { search?: string; active_only?: boolean }) => {
         const qs = buildQueryString({ search: params?.search, active_only: params?.active_only ? 1 : undefined });
         return api.get<{ data: EmployeeSummary[]; total: number }>(`/employees/all-ids${qs ? `?${qs}` : ''}`);
+    },
+    importEmails: (file: File) => {
+        const fd = new FormData();
+        fd.append('file', file);
+        return api.post<ImportEmailsResult>('/employees/import-emails', fd);
     },
 };
 
@@ -144,6 +151,12 @@ export const reports = {
         api.get<{ data: Report }>(`/reports/${id}${includeRows ? '' : '?include_rows=false'}`),
     delete: (id: number) =>
         api.delete<{ message: string }>(`/reports/${id}`),
+    download: (id: number) =>
+        api.getBlob(`/reports/${id}/download`),
+    sendEmail: (id: number) =>
+        api.post<{ message: string }>(`/reports/${id}/send-email`),
+    sendBatchEmails: (id: number) =>
+        api.post<SendBatchEmailsResult>(`/reports/${id}/send-batch-emails`),
 };
 
 // ── Settings ──

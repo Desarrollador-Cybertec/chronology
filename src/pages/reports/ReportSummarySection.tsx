@@ -1,5 +1,6 @@
 import type {
   Report,
+  ReportRowHorasLaborales,
   ReportSummaryGeneral,
   ReportSummaryHorasLaborales,
   ReportSummaryIncompletas,
@@ -32,7 +33,12 @@ export default function ReportSummarySection({ report }: Props) {
         {type === 'tardanzas' && <TardanzasCards s={summary as ReportSummaryTardanzas} />}
         {type === 'incompletas' && <IncompletasCards s={summary as ReportSummaryIncompletas} />}
         {type === 'informe_total' && <InformeTotalCards s={summary as ReportSummaryInformeTotal} />}
-        {type === 'horas_laborales' && <HorasLaboralesCards s={summary as ReportSummaryHorasLaborales} />}
+        {type === 'horas_laborales' && (
+          <HorasLaboralesCards
+            s={summary as ReportSummaryHorasLaborales}
+            totalIncomplete={(report.rows as ReportRowHorasLaborales[] | null ?? []).reduce((acc, r) => acc + r.days_incomplete, 0)}
+          />
+        )}
       </dl>
     </div>
   );
@@ -109,21 +115,11 @@ function InformeTotalCards({ s }: { s: ReportSummaryInformeTotal }) {
   );
 }
 
-function HorasLaboralesCards({ s }: { s: ReportSummaryHorasLaborales }) {
+function HorasLaboralesCards({ s, totalIncomplete }: { s: ReportSummaryHorasLaborales; totalIncomplete: number }) {
   return (
     <>
       <SummaryCard label="Empleados" value={s.total_employees} />
-      <SummaryCard label="Días totales" value={s.total_days} />
-      <SummaryCard label="Presentes" value={s.days_present} color="text-emerald-400" />
-      <SummaryCard label="Ausentes" value={s.days_absent} color="text-red-400" />
-      <SummaryCard label="Incompletos" value={s.days_incomplete} color="text-amber-400" />
-      <SummaryCard label="Entradas tarde" value={s.total_late_entries} color="text-amber-400" />
-      <SummaryCard label="Min. tardanza" value={formatMinutes(s.total_late_minutes)} />
-      <SummaryCard label="Tiempo trabajado" value={formatMinutes(s.total_worked_minutes)} />
-      <SummaryCard label="Horas extra" value={formatMinutes(s.total_overtime_minutes)} color="text-sky-400" />
-      <SummaryCard label="HE diurnas" value={formatMinutes(s.total_overtime_diurnal_minutes)} />
-      <SummaryCard label="HE nocturnas" value={formatMinutes(s.total_overtime_nocturnal_minutes)} />
-      <SummaryCard label="Salida temprana" value={formatMinutes(s.total_early_departure_minutes)} />
+      <SummaryCard label="Marcaciones incompletas" value={totalIncomplete} color={totalIncomplete > 0 ? 'text-amber-400' : undefined} />
     </>
   );
 }

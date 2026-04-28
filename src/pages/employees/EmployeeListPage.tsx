@@ -2,18 +2,20 @@ import { useEffect, useState, useCallback } from "react";
 import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
 import { Link } from "react-router";
 import { employees } from "@/api/endpoints";
-import type { Employee, PaginationMeta } from "@/types/api";
+import type { Employee, ImportEmailsResult, PaginationMeta } from "@/types/api";
 import Pagination from "@/components/ui/Pagination";
 import { useAuth } from "@/context/useAuth";
 import { sileo } from "sileo";
 import { ApiError } from "@/api/client";
 import SortableHeader from "@/components/ui/SortableHeader";
+import FileDropZone from "@/components/ui/FileDropZone";
 import {
   HiOutlineUsers,
   HiOutlineEye,
   HiOutlinePencilSquare,
   HiOutlinePower,
   HiOutlineMagnifyingGlass,
+  HiOutlineEnvelopeOpen,
 } from "react-icons/hi2";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import TutorialModal from "@/components/ui/TutorialModal";
@@ -31,6 +33,11 @@ export default function EmployeeListPage() {
   });
   const [sortKey, setSortKey] = useState<string>('last_name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  // Import emails state
+  const [showEmailImport, setShowEmailImport] = useState(false);
+  const [uploadingEmails, setUploadingEmails] = useState(false);
+  const [emailImportResult, setEmailImportResult] = useState<ImportEmailsResult | null>(null);
 
   const toggle = useCallback((column: string) => {
     setSortDir(prev => sortKey === column ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
@@ -68,6 +75,25 @@ export default function EmployeeListPage() {
     }
   };
 
+  const handleEmailImport = async (file: File) => {
+    setUploadingEmails(true);
+    setEmailImportResult(null);
+    try {
+      const res = await employees.importEmails(file);
+      setEmailImportResult(res);
+      sileo.success({ title: res.message });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 422) {
+        const body = err.body as { message?: string };
+        sileo.error({ title: body.message ?? 'Error al importar correos' });
+      } else {
+        sileo.error({ title: 'Error al importar correos' });
+      }
+    } finally {
+      setUploadingEmails(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -75,8 +101,54 @@ export default function EmployeeListPage() {
           <HiOutlineUsers className="h-6 w-6 text-radar" />
           <h2 className="text-2xl font-bold text-white">Empleados</h2>
         </div>
-        <TutorialModal steps={isSuperadmin ? employeeListAdminSteps : employeeListSteps} />
+        <div className="flex items-center gap-2">
+          {isSuperadmin && (
+            <button
+              type="button"
+              onClick={() => { setShowEmailImport((v) => !v); setEmailImportResult(null); }}
+              className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-grafito px-4 py-2 text-sm font-medium text-white transition hover:bg-grafito-lighter cursor-pointer"
+            >
+              <HiOutlineEnvelopeOpen className="h-4 w-4" />
+              Importar correos
+            </button>
+          )}
+          <TutorialModal steps={isSuperadmin ? employeeListAdminSteps : employeeListSteps} />
+        </div>
       </div>
+
+      {/* Import emails panel */}
+      {isSuperadmin && showEmailImport && (
+        <div className="mt-4 rounded-xl bg-grafito p-5 shadow-sm">
+          <h3 className="mb-1 text-base font-semibold text-white">Importar correos desde CSV</h3>
+          <p className="mb-4 text-sm text-gray-400">
+            El archivo debe tener las columnas <code className="rounded bg-white/5 px-1 py-0.5 text-xs">usuario</code> y{' '}
+            <code className="rounded bg-white/5 px-1 py-0.5 text-xs">correo electronico</code>. El sistema hace matching por nombre completo.
+          </p>
+          <FileDropZone onFileSelected={handleEmailImport} disabled={uploadingEmails} compact />
+          {uploadingEmails && <p className="mt-3 text-center text-sm text-radar animate-pulse">Procesando...</p>}
+          {emailImportResult && (
+            <div className="mt-4 rounded-lg border border-white/10 bg-navy/30 p-4 text-sm">
+              <p className="font-medium text-white">{emailImportResult.message}</p>
+              <div className="mt-2 flex gap-6 text-sm">
+                <span className="text-emerald-400">✓ {emailImportResult.matched} asignados</span>
+                {emailImportResult.unmatched > 0 && (
+                  <span className="text-amber-400">⚠ {emailImportResult.unmatched} sin match</span>
+                )}
+              </div>
+              {emailImportResult.unmatched_names.length > 0 && (
+                <div className="mt-3">
+                  <p className="mb-1 text-xs font-medium text-gray-400">Nombres sin coincidencia:</p>
+                  <ul className="space-y-0.5 text-xs text-gray-300">
+                    {emailImportResult.unmatched_names.map((name) => (
+                      <li key={name} className="text-amber-300/80">• {name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mt-4">
         <div className="relative max-w-sm">

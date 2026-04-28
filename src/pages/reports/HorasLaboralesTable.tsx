@@ -2,13 +2,12 @@ import { useMemo, useState } from 'react';
 import SortableHeader from '@/components/ui/SortableHeader';
 import { formatMinutes } from '@/utils/formatting';
 import type {
-  ReportRow,
   ReportRowHorasLaborales,
   ReportSummaryHorasLaborales,
 } from '@/types/api';
 
 interface Props {
-  rows: ReportRow[];
+  rows: ReportRowHorasLaborales[];
   summary?: ReportSummaryHorasLaborales;
 }
 
@@ -17,27 +16,7 @@ export default function HorasLaboralesTable({ rows, summary }: Props) {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const hlRows = useMemo<ReportRowHorasLaborales[]>(() => {
-    const aggMap = new Map<string, ReportRowHorasLaborales>();
-    for (const row of rows) {
-      const key = row.employee_code ?? '';
-      if (!aggMap.has(key)) {
-        aggMap.set(key, {
-          employee_code: key,
-          employee_name: row.employee_name ?? '',
-          department: row.department ?? '',
-          days_worked: 0,
-          days_absent: 0,
-          days_incomplete: 0,
-          total_worked_minutes: 0,
-        });
-      }
-      const agg = aggMap.get(key)!;
-      if (row.status === 'present') agg.days_worked++;
-      else if (row.status === 'absent') agg.days_absent++;
-      else if (row.status === 'incomplete') agg.days_incomplete++;
-      agg.total_worked_minutes += row.worked_minutes;
-    }
-    return [...aggMap.values()].sort((a, b) => {
+    return [...rows].sort((a, b) => {
       const va = a[sortKey as keyof ReportRowHorasLaborales];
       const vb = b[sortKey as keyof ReportRowHorasLaborales];
       if (typeof va === 'number' && typeof vb === 'number') {

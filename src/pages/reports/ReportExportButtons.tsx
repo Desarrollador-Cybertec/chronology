@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { sileo } from 'sileo';
 import { HiOutlineArrowDownTray } from 'react-icons/hi2';
-import type { Report, ReportRow } from '@/types/api';
+import type { Report, ReportRow, ReportRowHorasLaborales } from '@/types/api';
 import { exportToCSV, exportToPDF, exportToXLSX } from '@/utils/reportExports';
 
 type Format = 'csv' | 'xlsx' | 'pdf';
 
 interface Props {
   report: Report;
-  rows: ReportRow[];
+  rows: (ReportRow | ReportRowHorasLaborales)[];
 }
 
 export default function ReportExportButtons({ report, rows }: Props) {

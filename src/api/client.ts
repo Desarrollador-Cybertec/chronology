@@ -100,6 +100,27 @@ async function request<T>(
   return res.json();
 }
 
+async function requestBlob(endpoint: string): Promise<Blob> {
+  const token = getToken();
+  const headers: Record<string, string> = { Accept: 'application/pdf' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}${endpoint}`, { headers });
+
+  if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+    clearToken();
+    window.location.href = '/login';
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, { message: 'No autorizado' });
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ message: 'Error desconocido' }));
+    throw new ApiError(res.status, body);
+  }
+
+  return res.blob();
+}
+
 export const api = {
   get: <T>(url: string) => request<T>(url),
   post: <T>(url: string, data?: unknown) =>
@@ -122,4 +143,5 @@ export const api = {
       method: 'DELETE',
       body: data ? JSON.stringify(data) : undefined,
     }),
+  getBlob: (url: string) => requestBlob(url),
 };

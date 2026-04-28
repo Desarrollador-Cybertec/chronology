@@ -57,11 +57,25 @@ export interface Employee {
   internal_id: string;
   first_name: string;
   last_name: string;
+  email: string | null;
   department: string | null;
   position: string | null;
   is_active: boolean;
   shift_assignments: ShiftAssignment[];
   attendance_summary?: AttendanceSummary;
+}
+
+export interface ImportEmailsResult {
+  message: string;
+  matched: number;
+  unmatched: number;
+  unmatched_names: string[];
+}
+
+export interface SendBatchEmailsResult {
+  message: string;
+  total_employees: number;
+  estimated_hours: number;
 }
 
 export interface EmployeeSummary {
@@ -224,17 +238,7 @@ export interface ReportSummaryInformeTotal {
 
 export interface ReportSummaryHorasLaborales {
   total_employees: number;
-  total_days: number;
-  days_present: number;
-  days_absent: number;
-  days_incomplete: number;
-  total_late_entries: number;
-  total_late_minutes: number;
   total_worked_minutes: number;
-  total_overtime_minutes: number;
-  total_overtime_diurnal_minutes: number;
-  total_overtime_nocturnal_minutes: number;
-  total_early_departure_minutes: number;
 }
 
 export type ReportSummary =
@@ -277,12 +281,13 @@ export interface Report {
   name: string;
   generated_by: number;
   employee_id: number | null;
+  employee?: Employee;
   type: ReportType;
   date_from: string;
   date_to: string;
   status: ReportStatus;
   summary: ReportSummary | null;
-  rows: ReportRow[] | null;
+  rows: ReportRow[] | ReportRowHorasLaborales[] | null;
   error_message: string | null;
   completed_at: string | null;
   created_at: string;
