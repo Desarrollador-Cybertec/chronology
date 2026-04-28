@@ -175,6 +175,7 @@ export default function EmployeeListPage() {
                   <SortableHeader label="Nombre" column="last_name" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <SortableHeader label="Departamento" column="department" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Cargo</th>
+                  <th className="px-4 py-3">Correo</th>
                   <SortableHeader label="Estado" column="is_active" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
@@ -193,6 +194,7 @@ export default function EmployeeListPage() {
                     </td>
                     <td className="px-4 py-3">{emp.department ?? "—"}</td>
                     <td className="px-4 py-3">{emp.position ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-300">{emp.email ?? <span className="text-gray-500">—</span>}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${emp.is_active ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
@@ -232,7 +234,7 @@ export default function EmployeeListPage() {
                 {data.length === 0 && (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-4 py-8 text-center text-sm text-gray-400"
                     >
                       No hay empleados registrados.
