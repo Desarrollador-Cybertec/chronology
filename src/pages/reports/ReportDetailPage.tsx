@@ -78,12 +78,12 @@ export default function ReportDetailPage() {
       const res = await reports.sendBatchEmails(report.id);
       sileo.success({
         title: res.message,
-        description: `Estimado: ~${res.estimated_hours}h para ${res.total_employees} empleados.`,
+        description: `Inicio manual confirmado. Cadencia: 1 correo cada 4 minutos (15/h). Estimado: ~${res.estimated_hours}h para ${res.total_employees} empleados.`,
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
         const body = err.body as { message?: string };
-        sileo.error({ title: body.message ?? 'No se puede enviar los correos' });
+        sileo.error({ title: body.message ?? 'No se pueden enviar los correos' });
       } else {
         sileo.error({ title: 'Error al programar envío masivo' });
       }
@@ -146,17 +146,22 @@ export default function ReportDetailPage() {
       )}
 
       {report.type === 'general' && report.status === 'completed' && (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-gray-300">Acciones:</span>
-          <button
-            type="button"
-            disabled={sendingBatch}
-            onClick={handleSendBatchEmails}
-            className="flex items-center gap-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-300 transition hover:bg-sky-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <HiOutlineEnvelopeOpen className="h-4 w-4" />
-            {sendingBatch ? 'Programando envío…' : 'Enviar reportes por correo'}
-          </button>
+        <div className="mt-6 rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-gray-300">Acciones:</span>
+            <button
+              type="button"
+              disabled={sendingBatch}
+              onClick={handleSendBatchEmails}
+              className="flex items-center gap-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-300 transition hover:bg-sky-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <HiOutlineEnvelopeOpen className="h-4 w-4" />
+              {sendingBatch ? 'Programando envío…' : 'Iniciar envío manual por lote'}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-sky-200/80">
+            Este envío solo se inicia desde este botón. El sistema agenda 1 correo cada 240 segundos (15 por hora).
+          </p>
         </div>
       )}
 
